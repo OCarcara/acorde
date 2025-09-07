@@ -46,7 +46,7 @@ class Pessoa(models.Model):
     
     nome = models.CharField(max_length=100, null=False, blank=False)
     fones = models.CharField(max_length=40, null=True, blank=True)
-    email= models.CharField(max_length=100, null=True, blank=True)
+    email= models.EmailField(max_length=100, null=True, blank=True)
     naturalidade = models.CharField(max_length=40, null=True, blank=True)
     nacionalidade = models.CharField(max_length=20, null=True, blank=True)
     nascimento = models.DateField(null=True, blank=True, validators=[MaxValueValidator(limit_value=hoje)])
@@ -121,4 +121,20 @@ class Midia(models.Model):
         return f"{self.tipo} da(o) {self.peca_acervo}"
     
 
-    
+class TipoEventoPeca(models.Model):
+    desc_evento = models.CharField(max_length=100, null=False, blank=False)
+
+    def __str__(self):
+        return self.desc_evento
+
+
+class HistoricoPecas(models.Model):
+    peca = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE)
+    tipo_evento = models.ForeignKey(TipoEventoPeca, on_delete=models.CASCADE)
+    responsavel = models.ForeignKey(Pessoa, on_delete=models.SET_NULL, null=True)
+    descricao = models.TextField(null=True, blank=True)
+    data_inicio = models.DateField(null=False, blank=False, default=datetime.date.today)
+    data_final = models.DateField(null=False, blank=False, default=datetime.date.today)
+
+    def __str__(self):
+        return f"{self.peca} - {self.tipo} - De {self.data_inicio} a {self.data_final}"

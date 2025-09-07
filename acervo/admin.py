@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Pessoa, EixoOrganizador, Exposicao, LocalInterno, PecasAcervo, Midia
+from .models import *
 
 
 class PessoaAdmin(admin.ModelAdmin):
@@ -30,3 +30,11 @@ admin.site.register(PecasAcervo, PecasAcervoAdmin)
 class MidiaAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Midia, MidiaAdmin)
+
+class TipoEventoPecaAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(TipoEventoPeca, TipoEventoPecaAdmin)
+
+class HistoricoPecasAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(HistoricoPecas, HistoricoPecasAdmin)
