@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import *
 
+# configuracoes globais
+admin.site.site_header = "Memorial Olhos D'Água - Administração"
+admin.site.site_title = "Memorial Olhos D'Água"
+admin.site.index_title = "Gestão do Acervo"
 
 class PessoaAdmin(admin.ModelAdmin):
     pass

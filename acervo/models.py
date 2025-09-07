@@ -54,6 +54,10 @@ class Pessoa(models.Model):
     pessoa_fisica = models.BooleanField(default=True, null=False)
     autor_de_obra = models.BooleanField(default=True, null=False)
 
+    class Meta:
+        verbose_name: "Pessoa"
+        verbose_name_plural = "Pessoas" 
+
     def __str__(self):
         return self.nome
 
@@ -61,6 +65,10 @@ class Pessoa(models.Model):
 class EixoOrganizador(models.Model):
     
     eixo = models.CharField(max_length=100, null=False, blank=False)    
+
+    class Meta:
+        verbose_name = "Eixo Organizador"
+        verbose_name_plural = "Eixos Organizadores"
 
     def __str__(self):
         return self.eixo
@@ -75,9 +83,20 @@ class Exposicao(models.Model):
     local = models.CharField(max_length=255, null=False, blank=False)
     orgazador = models.CharField(max_length=200, null=False, blank=False)
 
+    class Meta:
+        verbose_name = "Exposição"
+        verbose_name_plural = "Exposições"
+
+    def __str__(self):
+        return f"{self.nome} de {self.data_inicio} à {self.data_final}"
+    
 
 class LocalInterno(models.Model):
     local = models.CharField(max_length=100, null=False, blank=False)    
+
+    class Meta:
+        verbose_name = "Local Interno"
+        verbose_name_plural = "Locais Internos"
 
     def __str__(self):
         return self.local
@@ -108,6 +127,10 @@ class PecasAcervo(models.Model):
     localizacao_interna = models.ForeignKey(LocalInterno, null=True, blank=True, on_delete=models.SET_NULL)
     publicada = models.BooleanField(default=False, null=False)
 
+    class Meta:
+        verbose_name = "Peça"
+        verbose_name_plural = "Peças"
+
     def __str__(self):
         return self.denominacao
     
@@ -117,24 +140,38 @@ class Midia(models.Model):
     peca_acervo = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE, null=False, blank=False)
     tipo = models.CharField(max_length=1, choices=TIPO_MIDIA_DIGITAL, default="F", blank=False, null=False)
 
+    class Meta:
+        verbose_name = "Mídia"
+        verbose_name_plural = "Mídias"
+
     def __str__(self):
         return f"{self.tipo} da(o) {self.peca_acervo}"
     
 
 class TipoEventoPeca(models.Model):
+
     desc_evento = models.CharField(max_length=100, null=False, blank=False)
+
+    class Meta:
+        verbose_name = "Tipo do Evento da Peça"
+        verbose_name_plural = "Tipos dos Eventos da Peça"
 
     def __str__(self):
         return self.desc_evento
 
 
 class HistoricoPecas(models.Model):
+
     peca = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE)
     tipo_evento = models.ForeignKey(TipoEventoPeca, on_delete=models.CASCADE)
     responsavel = models.ForeignKey(Pessoa, on_delete=models.SET_NULL, null=True)
     descricao = models.TextField(null=True, blank=True)
     data_inicio = models.DateField(null=False, blank=False, default=datetime.date.today)
     data_final = models.DateField(null=False, blank=False, default=datetime.date.today)
+
+    class Meta:
+        verbose_name = "Histórico da Peça"
+        verbose_name_plural = "Históricos da Peça"
 
     def __str__(self):
         return f"{self.peca} - {self.tipo} - De {self.data_inicio} a {self.data_final}"
