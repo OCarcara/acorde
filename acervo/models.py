@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, FileExtensionValidator
 from django.utils.dateformat import format
 import datetime
 
@@ -38,6 +38,12 @@ TIPO_MIDIA_DIGITAL = {
     "A": "Áudio"
 }
 
+EXTENSOES_PERMITIDAS = [
+    "jpg", "jpeg", "png", "gif",   # imagens
+    "mp4", "mov", "avi", "mkv",   # vídeos
+    "mp3", "wav", "ogg"           # áudios    
+]
+
 
 def hoje():
     return datetime.date.today()
@@ -50,7 +56,7 @@ class Pessoa(models.Model):
     email= models.EmailField('Email(s)',max_length=100, null=True, blank=True)
     naturalidade = models.CharField('Natural',max_length=40, null=True, blank=True)
     nacionalidade = models.CharField('Nacionalidade',max_length=20, null=True, blank=True)
-    nascimento = models.DateField('Data de nascimento',null=True, blank=True, validators=[MaxValueValidator(limit_value=hoje)])
+    nascimento = models.DateField('Data de nascimento', null=True, blank=True, validators=[MaxValueValidator(limit_value=hoje)])
     biografia = models.TextField('Biografia',null=True, blank=False)
     pessoa_fisica = models.BooleanField('Pessoa física?',default=True, null=False)
     autor_de_obra = models.BooleanField('Autor de obra?',default=True, null=False)
@@ -140,7 +146,8 @@ class Midia(models.Model):
     
     peca_acervo = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE, null=False, blank=False)
     tipo = models.CharField('Tipo da mídia', max_length=1, choices=TIPO_MIDIA_DIGITAL.items(), default="F", blank=False, null=False)
-    url_midia = models.FileField('Arquivo', upload_to="acervo/", null=True, blank=False)
+    url_midia = models.FileField('Arquivo', upload_to="acervo/", null=True, blank=False, validators=[FileExtensionValidator(allowed_extensions=EXTENSOES_PERMITIDAS)])
+    data_upload = models.DateField('Data upload', auto_now_add=True)
 
     class Meta:
         verbose_name = "Mídia"
