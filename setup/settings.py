@@ -56,7 +56,7 @@ ROOT_URLCONF = 'setup.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,6 +119,7 @@ DATETIME_FORMAT = 'd/m/Y H:i'
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIR = [os.path.join(BASE_DIR, "static"),]
 
 # Midias
 MEDIA_URL = '/media/'
