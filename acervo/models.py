@@ -112,7 +112,7 @@ class LocalInterno(models.Model):
 class PecasAcervo(models.Model):
 
     denominacao = models.CharField('Nome da peça',max_length=100, null=False, blank=False)
-    autor = models.ForeignKey(Pessoa, on_delete=models.SET_NULL, null=True, blank=True)
+    autor = models.ManyToManyField(Pessoa, null=True, blank=True, verbose_name="Autores(as)")
     titulo_dado_pelo_autor = models.CharField('Título dado pelo autor', max_length=100, null=False, blank=False)
     nr_registro = models.CharField('Nº registro', max_length=10, null=True, blank=True)
     numero_ordem = models.CharField('Nº de ordem', max_length=3, null=True, blank=True)
