@@ -2,7 +2,59 @@
 
 {% block content %}
 <div class="container py-4">
-    <h2 class="mb-4">{% if peca %}Editar Peça{% else %}Adicionar Peça{% endif %}</h2>
-    
+    <div class="row">
+        <div class="col-10">
+            <h2 class="mb-4">{% if peca %}Editar Peça{% else %}Adicionar Peça{% endif %}</h2>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'pecas_acervo' %}">Retornar</a>
+        </div>
+    </div>
+    <div class="row">
+        <form action="{% url 'atualizar_peca' peca.id %}" method="post">
+            {% csrf_token %}
+            {% if error_message %}
+                <p><strong>{{ error_message }}</strong></p>
+            {% endif %}
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Denominacao -->
+                    <label for="denominacao" class="text-black-50">Denominação</label>
+                    <input type="text" class="form-control mb-3" id="denominacao" placeholder="Denominação interna da peça" value="{{ peca.denominacao }}">            
+                </div>
+                <div class="col-md-6">
+                    <!-- Autor -->
+                    <label for="autor" class="text-black-50">Autor(a) da obra</label>
+                    <input type="text" class="form-control mb-3" id="autor" placeholder="Nome dos(as) autores(as) da obra" value="{{ peca.autor }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Titulo dado pelo autor -->
+                    <label for="tit_autor" class="text-black-50">Título da obra dada pelo autor</label>
+                    <input type="text" class="form-control mb-3" id="tit_autor" placeholder="Título da obra dada pelos(as) próprios(as) autores(as)" value="{{ peca.titulo_dado_pelo_autor }}">
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col">
+                            <label for="nr_registro" class="text-black-50">Nº registro</label>
+                            <input type="text" class="form-control mb-3" id="nr_registro" value="{{ peca.nr_registro }}">
+                        </div>                        
+                        <div class="col">
+                            <label for="numero_ordem" class="text-black-50">Nº de ordem</label>
+                            <input type="text" class="form-control mb-3" id="numero_ordem" value="{{ peca.numero_ordem }}">
+                        </div>
+                        <div class="col">
+                            <label for="situacao" class="text-black-50">Nº de ordem</label>
+                            <input type="text" class="form-control mb-3" id="situacao" value="{{ peca.situacao }}">
+                        </div>
+                        
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
 </div>
 {% endblock %}

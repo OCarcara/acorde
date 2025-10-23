@@ -2,29 +2,31 @@
 
 {% block content %}
 <div class="row">
-    <div class="row">
-        <div class="col">
+    <div class="row mb-2">
+        <div class="col-md-6">
             <h3 class="mb-4">Peças do Acervo</h3>
         </div>
-    <div class="col text-end">
-      <a href="#" class="btn btn-primary">Adicionar Peça ao Acervo</a>
-    </div>
+        <div class="col-md-6 text-md-end">
+          <a href="#" class="btn btn-primary">Adicionar Peça ao Acervo</a>
+        </div>
     </div>
     <div class="table-responsive">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark">
           <tr>
             <th>Denominação</th>
-            <th>Autor</th>
-            <th>Título (dado pelo autor)</th>
+            <th>Autores(as)</th>
+            <th>Título dado pelo(s) autores(as)</th>
           </tr>
         </thead>
         <tbody>
-          {% for p in pecas %}
+          {% for peca in pecas %}
             <tr>
-              <td>{{ p.denominacao }}</td>
-              <td>{% if p.autor %}{{ p.autor.nome }}{% else %}-{% endif %}</td>
-              <td>{{ p.titulo_dado_pelo_autor }}</td>
+              <td>
+                <a href="{% url 'editar_peca' peca.id %}">{{ peca.denominacao }}</a>
+              </td>
+              <td>{% if peca.autor %}{{ peca.autor.nome }}{% else %}-{% endif %}</td>
+              <td>{{ peca.titulo_dado_pelo_autor }}</td>
             </tr>
           {% empty %}
             <tr>
