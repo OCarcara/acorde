@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # meu app
     'acervo',
 ]
 
@@ -68,6 +70,8 @@ TEMPLATES = [
     },
 ]
 
+
+# Config para o servidor WSGI
 WSGI_APPLICATION = 'setup.wsgi.application'
 
 
