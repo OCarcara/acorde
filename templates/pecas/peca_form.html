@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <form action="{{ form_action|default:'' }}" method="post" class="needs-validation" novalidate>
+    <form action="{{ form_action|default:'' }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -25,11 +25,11 @@
         {% endif %}
 
         <div class="row g-3">
-            {% with field=form.denominacao col_class="col-md-12" %}
+            {% with field=form.denominacao col_class="col-12" %}
                 {% include "pecas/partials/_form_field.html" %}
             {% endwith %}
 
-            {% with field=form.autor col_class="col-md-12" %}
+            {% with field=form.autor col_class="col-12" %}
                 {% include "pecas/partials/_form_field.html" %}
             {% endwith %}
 
@@ -113,6 +113,67 @@
                 {% include "pecas/partials/_checkbox_field.html" %}
             {% endwith %}
         </div>
+
+        {% if midia_formset %}
+            <hr class="my-4">
+            <h3 class="h5 mb-3">Mídias da peça</h3>
+            {{ midia_formset.management_form }}
+
+            {% if midia_formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for error in midia_formset.non_form_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% for midia_form in midia_formset %}
+                <div class="border rounded p-3 mb-3">
+                    {% for hidden in midia_form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+
+                    {% if midia_form.instance.pk and midia_form.instance.url_midia %}
+                        <div class="mb-3">
+                            {% if midia_form.instance.tipo == "F" %}
+                                <img
+                                    src="{{ midia_form.instance.url_midia.url }}"
+                                    class="img-fluid rounded"
+                                    alt="{{ midia_form.instance.legenda|default:'Pré-visualização da mídia' }}"
+                                >
+                            {% else %}
+                                <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    Abrir arquivo atual
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-3">
+                        {% with field=midia_form.tipo col_class="col-md-3" %}
+                            {% include "pecas/partials/_form_field.html" %}
+                        {% endwith %}
+
+                        {% with field=midia_form.url_midia col_class="col-md-5" %}
+                            {% include "pecas/partials/_form_field.html" %}
+                        {% endwith %}
+
+                        {% with field=midia_form.legenda col_class="col-md-4" %}
+                            {% include "pecas/partials/_form_field.html" %}
+                        {% endwith %}
+                    </div>
+
+                    {% if midia_form.instance.pk %}
+                        <div class="form-check mt-3">
+                            {{ midia_form.DELETE }}
+                            <label class="form-check-label" for="{{ midia_form.DELETE.id_for_label }}">Remover esta mídia</label>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <div class="mt-4 d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary">{{ submit_label|default:"Salvar" }}</button>

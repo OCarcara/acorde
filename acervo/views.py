@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import PecasAcervoForm
+from .forms import MidiaFormSet, PecasAcervoForm
 from .models import PecasAcervo
 
 
@@ -19,16 +19,28 @@ def pecas_acervo(request):
 
 
 def peca_create(request):
+    empty_instance = PecasAcervo()
+
     if request.method == "POST":
         form = PecasAcervoForm(request.POST)
-        if form.is_valid():
-            form.save()
+        midia_formset = MidiaFormSet(
+            request.POST,
+            request.FILES,
+            instance=empty_instance,
+            prefix="midia",
+        )
+        if form.is_valid() and midia_formset.is_valid():
+            peca = form.save()
+            midia_formset.instance = peca
+            midia_formset.save()
             return redirect("pecas_acervo")
     else:
         form = PecasAcervoForm()
+        midia_formset = MidiaFormSet(instance=empty_instance, prefix="midia")
 
     context = {
         "form": form,
+        "midia_formset": midia_formset,
         "form_action": reverse("peca_create"),
         "titulo_pagina": "Adicionar peça ao acervo",
         "submit_label": "Adicionar peça",
@@ -41,14 +53,23 @@ def peca_update(request, pk):
 
     if request.method == "POST":
         form = PecasAcervoForm(request.POST, instance=peca)
-        if form.is_valid():
+        midia_formset = MidiaFormSet(
+            request.POST,
+            request.FILES,
+            instance=peca,
+            prefix="midia",
+        )
+        if form.is_valid() and midia_formset.is_valid():
             form.save()
+            midia_formset.save()
             return redirect("pecas_acervo")
     else:
         form = PecasAcervoForm(instance=peca)
+        midia_formset = MidiaFormSet(instance=peca, prefix="midia")
 
     context = {
         "form": form,
+        "midia_formset": midia_formset,
         "peca": peca,
         "form_action": reverse("peca_update", args=[pk]),
         "titulo_pagina": "Editar peça",
@@ -65,5 +86,3 @@ def peca_delete(request, pk):
         return redirect("pecas_acervo")
 
     return render(request, "pecas/peca_confirm_delete.html", {"peca": peca})
-
-

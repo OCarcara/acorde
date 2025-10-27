@@ -41,7 +41,9 @@ TIPO_MIDIA_DIGITAL = {
 EXTENSOES_PERMITIDAS = [
     "jpg", "jpeg", "png", "gif",   # imagens
     "mp4", "mov", "avi", "mkv",   # vídeos
-    "mp3", "wav", "ogg"           # áudios    
+    "mp3", "wav", "ogg",          # áudios
+    "pdf",                        # documentos
+    "pdf",                        # documentos
 ]
 
 
@@ -144,7 +146,7 @@ class PecasAcervo(models.Model):
 
 class Midia(models.Model):
     
-    peca_acervo = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE, null=False, blank=False)
+    peca_acervo = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE, null=False, blank=False, related_name="midias")
     tipo = models.CharField('Tipo da mídia', max_length=1, choices=TIPO_MIDIA_DIGITAL.items(), default="F", blank=False, null=False)
     url_midia = models.FileField('Arquivo', upload_to="acervo/", null=True, blank=False, validators=[FileExtensionValidator(allowed_extensions=EXTENSOES_PERMITIDAS)])
     data_upload = models.DateField('Data upload', auto_now_add=True)

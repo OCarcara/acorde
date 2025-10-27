@@ -1,6 +1,7 @@
 from django import forms
+from django.forms import inlineformset_factory
 
-from .models import PecasAcervo
+from .models import Midia, PecasAcervo
 
 
 class PecasAcervoForm(forms.ModelForm):
@@ -134,3 +135,35 @@ class PecasAcervoForm(forms.ModelForm):
             for field_name, field in self.fields.items():
                 if self.errors.get(field_name):
                     add_class(field.widget, "is-invalid")
+
+
+class MidiaForm(forms.ModelForm):
+    class Meta:
+        model = Midia
+        fields = ["tipo", "url_midia", "legenda"]
+        labels = {
+            "tipo": "Tipo da mídia",
+            "url_midia": "Arquivo",
+            "legenda": "Legenda",
+        }
+        widgets = {
+            "tipo": forms.Select(attrs={"class": "form-select"}),
+            "url_midia": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "legenda": forms.TextInput(attrs={"class": "form-control"}),
+        }
+        help_texts = {
+            "url_midia": "Formatos aceitos: jpg, png, gif, mp4, mp3, pdf, etc.",
+            "legenda": "Descreva brevemente o conteúdo da mídia.",
+        }
+        error_messages = {
+            "url_midia": {"required": "Envie um arquivo para a mídia."},
+        }
+
+
+MidiaFormSet = inlineformset_factory(
+    PecasAcervo,
+    Midia,
+    form=MidiaForm,
+    extra=1,
+    can_delete=True,
+)
