@@ -2,12 +2,21 @@
 
 {% block content %}
 <div class="container py-4">
-  <h2>Confirmar exclusão</h2>
-  <p>Tem certeza que deseja excluir a peça "{{ peca }}"?</p>
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Excluir</button>
-    <a href="{% url 'pecas_acervo' %}" class="btn btn-secondary">Cancelar</a>
-  </form>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-3">Excluir peça</h2>
+            <div class="alert alert-warning" role="alert">
+                Tem certeza de que deseja excluir a peça <strong>{{ peca.denominacao }}</strong>?
+                Esta ação não poderá ser desfeita.
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+                    <a href="{% url 'pecas_acervo' %}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

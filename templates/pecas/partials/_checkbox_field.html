@@ -1,0 +1,15 @@
+{% with col_class=col_class|default:"col-12" %}
+<div class="{{ col_class }}">
+    <div class="form-check mt-4">
+        {{ field }}
+        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% if field.errors %}
+            <div class="invalid-feedback d-block">
+                {% for error in field.errors %}
+                    {{ error }}{% if not forloop.last %}<br>{% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endwith %}

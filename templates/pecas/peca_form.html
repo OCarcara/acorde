@@ -2,59 +2,125 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row">
-        <div class="col-10">
-            <h2 class="mb-4">{% if peca %}Editar Peça{% else %}Adicionar Peça{% endif %}</h2>
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8">
+            <h2 class="mb-0">{{ titulo_pagina|default:"Editar peça" }}</h2>
         </div>
-        <div class="col text-end">
-            <a href="{% url 'pecas_acervo' %}">Retornar</a>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'pecas_acervo' %}" class="btn btn-outline-secondary">Voltar à lista</a>
         </div>
     </div>
-    <div class="row">
-        <form action="{% url 'atualizar_peca' peca.id %}" method="post">
-            {% csrf_token %}
-            {% if error_message %}
-                <p><strong>{{ error_message }}</strong></p>
+
+    <form action="{{ form_action|default:'' }}" method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="row g-3">
+            {% with field=form.denominacao col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.autor col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.titulo_dado_pelo_autor col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.nr_registro col_class="col-md-3" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.numero_ordem col_class="col-md-3" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.situacao col_class="col-md-4" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.tipologia col_class="col-md-4" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.estado_conservacao col_class="col-md-4" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.forma_aquisicao col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.eixo_organizador col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.exposicao col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.localizacao_interna col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.thesaurus col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.dimensoes col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.resumo_descritivo col_class="col-12" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.material_tecnica col_class="col-12" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.local_producao col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.data_inicial_producao col_class="col-md-3" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.data_final_producao col_class="col-md-3" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.pode_reproduzir col_class="col-md-6" %}
+                {% include "pecas/partials/_checkbox_field.html" %}
+            {% endwith %}
+
+            {% with field=form.condicoes_reproducao col_class="col-12" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.publicada col_class="col-md-6" %}
+                {% include "pecas/partials/_checkbox_field.html" %}
+            {% endwith %}
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{{ submit_label|default:"Salvar" }}</button>
+            <a href="{% url 'pecas_acervo' %}" class="btn btn-outline-secondary">Cancelar</a>
+            {% if peca %}
+                <a href="{% url 'peca_delete' peca.pk %}" class="btn btn-outline-danger ms-auto">Excluir peça</a>
             {% endif %}
-            <div class="row">
-                <div class="col-md-6">
-                    <!-- Denominacao -->
-                    <label for="denominacao" class="text-black-50">Denominação</label>
-                    <input type="text" class="form-control mb-3" id="denominacao" placeholder="Denominação interna da peça" value="{{ peca.denominacao }}">            
-                </div>
-                <div class="col-md-6">
-                    <!-- Autor -->
-                    <label for="autor" class="text-black-50">Autor(a) da obra</label>
-                    <input type="text" class="form-control mb-3" id="autor" placeholder="Nome dos(as) autores(as) da obra" value="{{ peca.autor }}">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <!-- Titulo dado pelo autor -->
-                    <label for="tit_autor" class="text-black-50">Título da obra dada pelo autor</label>
-                    <input type="text" class="form-control mb-3" id="tit_autor" placeholder="Título da obra dada pelos(as) próprios(as) autores(as)" value="{{ peca.titulo_dado_pelo_autor }}">
-                </div>
-                <div class="col-md-6">
-                    <div class="row">
-                        <div class="col">
-                            <label for="nr_registro" class="text-black-50">Nº registro</label>
-                            <input type="text" class="form-control mb-3" id="nr_registro" value="{{ peca.nr_registro }}">
-                        </div>                        
-                        <div class="col">
-                            <label for="numero_ordem" class="text-black-50">Nº de ordem</label>
-                            <input type="text" class="form-control mb-3" id="numero_ordem" value="{{ peca.numero_ordem }}">
-                        </div>
-                        <div class="col">
-                            <label for="situacao" class="text-black-50">Nº de ordem</label>
-                            <input type="text" class="form-control mb-3" id="situacao" value="{{ peca.situacao }}">
-                        </div>
-                        
-                    </div>
-                </div>
-
-            </div>
-
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 {% endblock %}

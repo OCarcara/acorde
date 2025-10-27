@@ -1,42 +1,56 @@
 {% extends "partials/_base.html" %}
 
 {% block content %}
-<div class="row">
-    <div class="row mb-2">
+<div class="container py-4">
+    <div class="row align-items-center mb-3">
         <div class="col-md-6">
-            <h3 class="mb-4">Peças do Acervo</h3>
+            <h3 class="mb-0">Peças do acervo</h3>
         </div>
-        <div class="col-md-6 text-md-end">
-          <a href="#" class="btn btn-primary">Adicionar Peça ao Acervo</a>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'peca_create' %}" class="btn btn-primary">Adicionar peça ao acervo</a>
         </div>
     </div>
-    <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>Denominação</th>
-            <th>Autores(as)</th>
-            <th>Título dado pelo(s) autores(as)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for peca in pecas %}
-            <tr>
-              <td>
-                <a href="{% url 'editar_peca' peca.id %}">{{ peca.denominacao }}</a>
-              </td>
-              <td>{% if peca.autor %}{{ peca.autor.nome }}{% else %}-{% endif %}</td>
-              <td>{{ peca.titulo_dado_pelo_autor }}</td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="3" class="text-center">Nenhuma peça encontrada.</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
 
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Denominação</th>
+                    <th scope="col">Autores(as)</th>
+                    <th scope="col">Título atribuído pelo autor(a)</th>
+                    <th scope="col" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for peca in pecas %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'peca_update' peca.id %}">{{ peca.denominacao }}</a>
+                        </td>
+                        <td>
+                            {% with autores=peca.autor.all %}
+                                {% if autores %}
+                                    {% for pessoa in autores %}
+                                        {{ pessoa.nome }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>{{ peca.titulo_dado_pelo_autor }}</td>
+                        <td class="text-center text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary me-1" href="{% url 'peca_update' peca.id %}">Editar</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'peca_delete' peca.id %}">Excluir</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhuma peça encontrada.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
