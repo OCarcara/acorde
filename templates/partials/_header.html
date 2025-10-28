@@ -10,22 +10,32 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            {% with current_url=request.resolver_match.url_name|default_if_none:'' %}
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'index' %}">Principal</a>
+                    <a class="nav-link {% if current_url == 'index' %}active{% else %}text-muted{% endif %}"
+                        {% if current_url == 'index' %}aria-current="page"{% endif %}
+                        href="{% url 'index' %}">Principal</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pecas_acervo' %}">Peças</a>
+                    <a class="nav-link {% if current_url == 'pecas_acervo' or current_url == 'peca_create' or current_url == 'peca_update' or current_url == 'peca_delete' %}active{% else %}text-muted{% endif %}"
+                        {% if current_url == 'pecas_acervo' or current_url == 'peca_create' or current_url == 'peca_update' or current_url == 'peca_delete' %}aria-current="page"{% endif %}
+                        href="{% url 'pecas_acervo' %}">Peças</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Pessoas</a>
+                    <a class="nav-link {% if current_url == 'pessoas_list' or current_url == 'pessoa_create' or current_url == 'pessoa_update' or current_url == 'pessoa_delete' %}active{% else %}text-muted{% endif %}"
+                        {% if current_url == 'pessoas_list' or current_url == 'pessoa_create' or current_url == 'pessoa_update' or current_url == 'pessoa_delete' %}aria-current="page"{% endif %}
+                        href="{% url 'pessoas_list' %}">Pessoas</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Exposições</a>
+                    <a class="nav-link {% if current_url == 'exposicoes_list' %}active{% else %}text-muted{% endif %}"
+                        {% if current_url == 'exposicoes_list' %}aria-current="page"{% endif %}
+                        href="#">Exposições</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {% if current_url == 'configuracoes' %}active{% else %}text-muted{% endif %}"
+                        {% if current_url == 'configuracoes' %}aria-current="page"{% endif %}
+                        href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Configurações
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -38,6 +48,7 @@
                     </ul>
                 </li>
             </ul>
+            {% endwith %}
             <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Search</button>

@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Midia, PecasAcervo
+from .models import Midia, PecasAcervo, Pessoa
 
 
 class PecasAcervoForm(forms.ModelForm):
@@ -167,3 +167,76 @@ MidiaFormSet = inlineformset_factory(
     extra=1,
     can_delete=True,
 )
+
+class PessoaForm(forms.ModelForm):
+    nascimento = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        input_formats=["%Y-%m-%d"],
+    )
+
+    class Meta:
+        model = Pessoa
+        fields = [
+            "nome",
+            "email",
+            "fones",
+            "naturalidade",
+            "nacionalidade",
+            "nascimento",
+            "biografia",
+            "pessoa_fisica",
+            "autor_de_obra",
+        ]
+        labels = {
+            "nome": "Nome completo",
+            "fones": "Telefone(s)",
+            "naturalidade": "Naturalidade",
+            "nacionalidade": "Nacionalidade",
+            "nascimento": "Data de nascimento",
+            "biografia": "Biografia",
+            "pessoa_fisica": "Pessoa física?",
+            "autor_de_obra": "Autor(a) de obra?",
+        }
+        widgets = {
+            "biografia": forms.Textarea(attrs={"rows": 4}),
+            "pessoa_fisica": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "autor_de_obra": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+        help_texts = {
+            "fones": "Informe um ou mais telefones. Separe por vírgula, se necessário.",
+            "biografia": "Resumo da trajetória ou informações relevantes.",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        for field_name, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, forms.CheckboxInput):
+                continue
+
+            if isinstance(
+                widget,
+                (
+                    forms.TextInput,
+                    forms.EmailInput,
+                    forms.NumberInput,
+                    forms.DateInput,
+                ),
+            ):
+                add_class(widget, "form-control")
+            elif isinstance(widget, forms.Textarea):
+                add_class(widget, "form-control")
+
+        if self.is_bound:
+            for field_name, field in self.fields.items():
+                if self.errors.get(field_name):
+                    add_class(field.widget, "is-invalid")
