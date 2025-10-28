@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import PecasAcervoForm
-from .models import PecasAcervo
+from .forms import PecasAcervoForm, PessoaForm
+from .models import PecasAcervo, Pessoa
 
 
 def index(request):
@@ -65,5 +65,59 @@ def peca_delete(request, pk):
         return redirect("pecas_acervo")
 
     return render(request, "pecas/peca_confirm_delete.html", {"peca": peca})
+
+
+def pessoas_list(request):
+    pessoas = Pessoa.objects.all().order_by("nome")
+    return render(request, "pessoas/pessoas.html", {"pessoas": pessoas})
+
+
+def pessoa_create(request):
+    if request.method == "POST":
+        form = PessoaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("pessoas_list")
+    else:
+        form = PessoaForm()
+
+    context = {
+        "form": form,
+        "form_action": reverse("pessoa_create"),
+        "titulo_pagina": "Adicionar pessoa",
+        "submit_label": "Adicionar pessoa",
+    }
+    return render(request, "pessoas/pessoa_form.html", context)
+
+
+def pessoa_update(request, pk):
+    pessoa = get_object_or_404(Pessoa, pk=pk)
+
+    if request.method == "POST":
+        form = PessoaForm(request.POST, instance=pessoa)
+        if form.is_valid():
+            form.save()
+            return redirect("pessoas_list")
+    else:
+        form = PessoaForm(instance=pessoa)
+
+    context = {
+        "form": form,
+        "pessoa": pessoa,
+        "form_action": reverse("pessoa_update", args=[pk]),
+        "titulo_pagina": "Editar pessoa",
+        "submit_label": "Salvar alterações",
+    }
+    return render(request, "pessoas/pessoa_form.html", context)
+
+
+def pessoa_delete(request, pk):
+    pessoa = get_object_or_404(Pessoa, pk=pk)
+
+    if request.method == "POST":
+        pessoa.delete()
+        return redirect("pessoas_list")
+
+    return render(request, "pessoas/pessoa_confirm_delete.html", {"pessoa": pessoa})
 
 
