@@ -28,9 +28,9 @@
                         href="{% url 'pessoas_list' %}">Pessoas</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if current_url == 'exposicoes_list' %}active{% else %}text-muted{% endif %}"
-                        {% if current_url == 'exposicoes_list' %}aria-current="page"{% endif %}
-                        href="#">Exposições</a>
+                    <a class="nav-link {% if current_url == 'exposicoes_list' or current_url == 'exposicao_create' or current_url == 'exposicao_update' or current_url == 'exposicao_delete' %}active{% else %}text-muted{% endif %}"
+                        {% if current_url == 'exposicoes_list' or current_url == 'exposicao_create' or current_url == 'exposicao_update' or current_url == 'exposicao_delete' %}aria-current="page"{% endif %}
+                        href="{% url 'exposicoes_list' %}">Exposições</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {% if current_url == 'configuracoes' %}active{% else %}text-muted{% endif %}"

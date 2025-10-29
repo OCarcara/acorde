@@ -1,0 +1,134 @@
+{% extends "partials/_base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8">
+            <h2 class="mb-0">{{ titulo_pagina|default:"Editar exposição" }}</h2>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'exposicoes_list' %}" class="btn btn-outline-secondary">Voltar à lista</a>
+        </div>
+    </div>
+
+    <form action="{{ form_action|default:'' }}" method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="row g-3">
+            <div class="col-12">
+                <label for="{{ form.nome.id_for_label }}" class="form-label">
+                    {{ form.nome.label }}
+                    {% if form.nome.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ form.nome }}
+                {% if form.nome.help_text %}
+                    <small class="form-text text-muted">{{ form.nome.help_text }}</small>
+                {% endif %}
+                {% if form.nome.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.nome.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-12">
+                <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                    {{ form.descricao.label }}
+                    {% if form.descricao.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ form.descricao }}
+                {% if form.descricao.help_text %}
+                    <small class="form-text text-muted">{{ form.descricao.help_text }}</small>
+                {% endif %}
+                {% if form.descricao.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.descricao.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <label for="{{ form.data_inicio.id_for_label }}" class="form-label">
+                    {{ form.data_inicio.label }}
+                    {% if form.data_inicio.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ form.data_inicio }}
+                {% if form.data_inicio.help_text %}
+                    <small class="form-text text-muted">{{ form.data_inicio.help_text }}</small>
+                {% endif %}
+                {% if form.data_inicio.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.data_inicio.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <label for="{{ form.data_final.id_for_label }}" class="form-label">
+                    {{ form.data_final.label }}
+                    {% if form.data_final.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ form.data_final }}
+                {% if form.data_final.help_text %}
+                    <small class="form-text text-muted">{{ form.data_final.help_text }}</small>
+                {% endif %}
+                {% if form.data_final.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.data_final.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-12">
+                <label for="{{ form.local.id_for_label }}" class="form-label">
+                    {{ form.local.label }}
+                    {% if form.local.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ form.local }}
+                {% if form.local.help_text %}
+                    <small class="form-text text-muted">{{ form.local.help_text }}</small>
+                {% endif %}
+                {% if form.local.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.local.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-12">
+                <label for="{{ form.orgazador.id_for_label }}" class="form-label">
+                    {{ form.orgazador.label }}
+                    {% if form.orgazador.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ form.orgazador }}
+                {% if form.orgazador.help_text %}
+                    <small class="form-text text-muted">{{ form.orgazador.help_text }}</small>
+                {% endif %}
+                {% if form.orgazador.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.orgazador.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{{ submit_label|default:"Salvar" }}</button>
+            <a href="{% url 'exposicoes_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+            {% if exposicao %}
+                <a href="{% url 'exposicao_delete' exposicao.pk %}" class="btn btn-outline-danger ms-auto">Excluir exposição</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

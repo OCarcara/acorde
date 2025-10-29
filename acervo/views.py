@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import MidiaFormSet, PecasAcervoForm, PessoaForm
-from .models import PecasAcervo, Pessoa
+from .forms import MidiaFormSet, PecasAcervoForm, PessoaForm, ExposicaoForm
+from .models import PecasAcervo, Pessoa, Exposicao
 
 
 def index(request):
@@ -142,3 +142,55 @@ def pessoa_delete(request, pk):
     return render(request, "pessoas/pessoa_confirm_delete.html", {"pessoa": pessoa})
 
 
+def exposicoes_list(request):
+    exposicoes = Exposicao.objects.all().order_by("-data_inicio")
+    return render(request, "exposicoes/exposicoes.html", {"exposicoes": exposicoes})
+
+
+def exposicao_create(request):
+    if request.method == "POST":
+        form = ExposicaoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("exposicoes_list")
+    else:
+        form = ExposicaoForm()
+
+    context = {
+        "form": form,
+        "form_action": reverse("exposicao_create"),
+        "titulo_pagina": "Adicionar exposição",
+        "submit_label": "Adicionar exposição",
+    }
+    return render(request, "exposicoes/exposicao_form.html", context)
+
+
+def exposicao_update(request, pk):
+    exposicao = get_object_or_404(Exposicao, pk=pk)
+
+    if request.method == "POST":
+        form = ExposicaoForm(request.POST, instance=exposicao)
+        if form.is_valid():
+            form.save()
+            return redirect("exposicoes_list")
+    else:
+        form = ExposicaoForm(instance=exposicao)
+
+    context = {
+        "form": form,
+        "exposicao": exposicao,
+        "form_action": reverse("exposicao_update", args=[pk]),
+        "titulo_pagina": "Editar exposição",
+        "submit_label": "Salvar alterações",
+    }
+    return render(request, "exposicoes/exposicao_form.html", context)
+
+
+def exposicao_delete(request, pk):
+    exposicao = get_object_or_404(Exposicao, pk=pk)
+
+    if request.method == "POST":
+        exposicao.delete()
+        return redirect("exposicoes_list")
+
+    return render(request, "exposicoes/exposicao_confirm_delete.html", {"exposicao": exposicao})

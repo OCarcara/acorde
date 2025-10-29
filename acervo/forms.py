@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Midia, PecasAcervo, Pessoa
+from .models import Midia, PecasAcervo, Pessoa, Exposicao
 
 
 class PecasAcervoForm(forms.ModelForm):
@@ -240,3 +240,92 @@ class PessoaForm(forms.ModelForm):
             for field_name, field in self.fields.items():
                 if self.errors.get(field_name):
                     add_class(field.widget, "is-invalid")
+
+
+class ExposicaoForm(forms.ModelForm):
+    data_inicio = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        input_formats=["%Y-%m-%d"],
+    )
+    data_final = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        input_formats=["%Y-%m-%d"],
+    )
+
+    class Meta:
+        model = Exposicao
+        fields = [
+            "nome",
+            "descricao",
+            "data_inicio",
+            "data_final",
+            "local",
+            "orgazador",
+        ]
+        labels = {
+            "nome": "Nome da exposição",
+            "descricao": "Descrição",
+            "data_inicio": "Data de início",
+            "data_final": "Data de encerramento",
+            "local": "Local(ais)",
+            "orgazador": "Organizador(es)",
+        }
+        widgets = {
+            "descricao": forms.Textarea(attrs={"rows": 4}),
+        }
+        help_texts = {
+            "local": "Informe o(s) local(ais) onde a exposição ocorreu ou ocorrerá.",
+            "orgazador": "Informe o(s) organizador(es) da exposição.",
+        }
+        error_messages = {
+            "nome": {"required": "Informe o nome da exposição."},
+            "descricao": {"required": "Descreva a exposição."},
+            "data_inicio": {"required": "Informe a data de início."},
+            "data_final": {"required": "Informe a data de encerramento."},
+            "local": {"required": "Informe o local da exposição."},
+            "orgazador": {"required": "Informe o(s) organizador(es)."},
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        for field_name, field in self.fields.items():
+            widget = field.widget
+            if isinstance(
+                widget,
+                (
+                    forms.TextInput,
+                    forms.EmailInput,
+                    forms.NumberInput,
+                    forms.DateInput,
+                ),
+            ):
+                add_class(widget, "form-control")
+            elif isinstance(widget, forms.Textarea):
+                add_class(widget, "form-control")
+
+        if self.is_bound:
+            for field_name, field in self.fields.items():
+                if self.errors.get(field_name):
+                    add_class(field.widget, "is-invalid")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        data_inicio = cleaned_data.get("data_inicio")
+        data_final = cleaned_data.get("data_final")
+
+        if data_inicio and data_final and data_inicio > data_final:
+            raise forms.ValidationError(
+                "A data de encerramento deve ser posterior à data de início."
+            )
+
+        return cleaned_data

@@ -1,0 +1,56 @@
+{% extends "partials/_base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">Exposições</h2>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'exposicao_create' %}" class="btn btn-primary">Adicionar Exposição</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome da Exposição</th>
+                    <th>Data de Início</th>
+                    <th>Data de Encerramento</th>
+                    <th>Local</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exposicao in exposicoes %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'exposicao_update' exposicao.pk %}" class="text-decoration-none">
+                                {{ exposicao.nome }}
+                            </a>
+                        </td>
+                        <td>{{ exposicao.data_inicio|date:"d/m/Y" }}</td>
+                        <td>{{ exposicao.data_final|date:"d/m/Y" }}</td>
+                        <td>{{ exposicao.local }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'exposicao_update' exposicao.pk %}" class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <a href="{% url 'exposicao_delete' exposicao.pk %}" class="btn btn-outline-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i> Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhuma exposição cadastrada.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
