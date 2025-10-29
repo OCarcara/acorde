@@ -16,5 +16,9 @@ urlpatterns = [
     path("exposicoes/adicionar/", views.exposicao_create, name="exposicao_create"),
     path("exposicoes/<int:pk>/editar/", views.exposicao_update, name="exposicao_update"),
     path("exposicoes/<int:pk>/excluir/", views.exposicao_delete, name="exposicao_delete"),
+    path("configuracoes/eixos/", views.eixos_list, name="eixos_list"),
+    path("configuracoes/eixos/adicionar/", views.eixo_create, name="eixo_create"),
+    path("configuracoes/eixos/<int:pk>/editar/", views.eixo_update, name="eixo_update"),
+    path("configuracoes/eixos/<int:pk>/excluir/", views.eixo_delete, name="eixo_delete"),
 ]
 

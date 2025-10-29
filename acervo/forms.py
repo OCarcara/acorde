@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Midia, PecasAcervo, Pessoa, Exposicao
+from .models import Midia, PecasAcervo, Pessoa, Exposicao, EixoOrganizador
 
 
 class PecasAcervoForm(forms.ModelForm):
@@ -240,6 +240,31 @@ class PessoaForm(forms.ModelForm):
             for field_name, field in self.fields.items():
                 if self.errors.get(field_name):
                     add_class(field.widget, "is-invalid")
+
+
+class EixoOrganizadorForm(forms.ModelForm):
+    class Meta:
+        model = EixoOrganizador
+        fields = ["eixo"]
+        labels = {"eixo": "Eixo organizador"}
+        error_messages = {
+            "eixo": {"required": "Informe o eixo organizador."},
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        add_class(self.fields["eixo"].widget, "form-control")
+
+        if self.is_bound and self.errors.get("eixo"):
+            add_class(self.fields["eixo"].widget, "is-invalid")
 
 
 class ExposicaoForm(forms.ModelForm):

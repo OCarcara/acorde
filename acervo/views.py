@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import MidiaFormSet, PecasAcervoForm, PessoaForm, ExposicaoForm
-from .models import PecasAcervo, Pessoa, Exposicao
+from .forms import MidiaFormSet, PecasAcervoForm, PessoaForm, ExposicaoForm, EixoOrganizadorForm
+from .models import PecasAcervo, Pessoa, Exposicao, EixoOrganizador
 
 
 def index(request):
@@ -140,6 +140,60 @@ def pessoa_delete(request, pk):
         return redirect("pessoas_list")
 
     return render(request, "pessoas/pessoa_confirm_delete.html", {"pessoa": pessoa})
+
+
+def eixos_list(request):
+    eixos = EixoOrganizador.objects.all().order_by("eixo")
+    return render(request, "configuracoes/eixos.html", {"eixos": eixos})
+
+
+def eixo_create(request):
+    if request.method == "POST":
+        form = EixoOrganizadorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("eixos_list")
+    else:
+        form = EixoOrganizadorForm()
+
+    context = {
+        "form": form,
+        "form_action": reverse("eixo_create"),
+        "titulo_pagina": "Adicionar eixo organizador",
+        "submit_label": "Adicionar eixo",
+    }
+    return render(request, "configuracoes/eixo_form.html", context)
+
+
+def eixo_update(request, pk):
+    eixo = get_object_or_404(EixoOrganizador, pk=pk)
+
+    if request.method == "POST":
+        form = EixoOrganizadorForm(request.POST, instance=eixo)
+        if form.is_valid():
+            form.save()
+            return redirect("eixos_list")
+    else:
+        form = EixoOrganizadorForm(instance=eixo)
+
+    context = {
+        "form": form,
+        "eixo": eixo,
+        "form_action": reverse("eixo_update", args=[pk]),
+        "titulo_pagina": "Editar eixo organizador",
+        "submit_label": "Salvar altera����es",
+    }
+    return render(request, "configuracoes/eixo_form.html", context)
+
+
+def eixo_delete(request, pk):
+    eixo = get_object_or_404(EixoOrganizador, pk=pk)
+
+    if request.method == "POST":
+        eixo.delete()
+        return redirect("eixos_list")
+
+    return render(request, "configuracoes/eixo_confirm_delete.html", {"eixo": eixo})
 
 
 def exposicoes_list(request):
