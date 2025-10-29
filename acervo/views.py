@@ -1,8 +1,23 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import MidiaFormSet, PecasAcervoForm, PessoaForm, ExposicaoForm, EixoOrganizadorForm
-from .models import PecasAcervo, Pessoa, Exposicao, EixoOrganizador
+from .forms import (
+    MidiaFormSet,
+    PecasAcervoForm,
+    PessoaForm,
+    ExposicaoForm,
+    EixoOrganizadorForm,
+    LocalInternoForm,
+    TipoEventoPecaForm,
+)
+from .models import (
+    PecasAcervo,
+    Pessoa,
+    Exposicao,
+    EixoOrganizador,
+    LocalInterno,
+    TipoEventoPeca,
+)
 
 
 def index(request):
@@ -194,6 +209,122 @@ def eixo_delete(request, pk):
         return redirect("eixos_list")
 
     return render(request, "configuracoes/eixo_confirm_delete.html", {"eixo": eixo})
+
+
+def locais_internos_list(request):
+    locais = LocalInterno.objects.all().order_by("local")
+    return render(request, "configuracoes/locais_internos.html", {"locais": locais})
+
+
+def local_interno_create(request):
+    if request.method == "POST":
+        form = LocalInternoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("locais_internos_list")
+    else:
+        form = LocalInternoForm()
+
+    context = {
+        "form": form,
+        "form_action": reverse("local_interno_create"),
+        "titulo_pagina": "Adicionar local interno",
+        "submit_label": "Adicionar local",
+    }
+    return render(request, "configuracoes/local_interno_form.html", context)
+
+
+def local_interno_update(request, pk):
+    local_interno = get_object_or_404(LocalInterno, pk=pk)
+
+    if request.method == "POST":
+        form = LocalInternoForm(request.POST, instance=local_interno)
+        if form.is_valid():
+            form.save()
+            return redirect("locais_internos_list")
+    else:
+        form = LocalInternoForm(instance=local_interno)
+
+    context = {
+        "form": form,
+        "local_interno": local_interno,
+        "form_action": reverse("local_interno_update", args=[pk]),
+        "titulo_pagina": "Editar local interno",
+        "submit_label": "Salvar alterações",
+    }
+    return render(request, "configuracoes/local_interno_form.html", context)
+
+
+def local_interno_delete(request, pk):
+    local_interno = get_object_or_404(LocalInterno, pk=pk)
+
+    if request.method == "POST":
+        local_interno.delete()
+        return redirect("locais_internos_list")
+
+    return render(
+        request,
+        "configuracoes/local_interno_confirm_delete.html",
+        {"local_interno": local_interno},
+    )
+
+
+def tipos_evento_list(request):
+    tipos_evento = TipoEventoPeca.objects.all().order_by("desc_evento")
+    return render(request, "configuracoes/tipos_evento.html", {"tipos_evento": tipos_evento})
+
+
+def tipo_evento_create(request):
+    if request.method == "POST":
+        form = TipoEventoPecaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("tipos_evento_list")
+    else:
+        form = TipoEventoPecaForm()
+
+    context = {
+        "form": form,
+        "form_action": reverse("tipo_evento_create"),
+        "titulo_pagina": "Adicionar tipo de evento",
+        "submit_label": "Adicionar tipo",
+    }
+    return render(request, "configuracoes/tipo_evento_form.html", context)
+
+
+def tipo_evento_update(request, pk):
+    tipo_evento = get_object_or_404(TipoEventoPeca, pk=pk)
+
+    if request.method == "POST":
+        form = TipoEventoPecaForm(request.POST, instance=tipo_evento)
+        if form.is_valid():
+            form.save()
+            return redirect("tipos_evento_list")
+    else:
+        form = TipoEventoPecaForm(instance=tipo_evento)
+
+    context = {
+        "form": form,
+        "tipo_evento": tipo_evento,
+        "form_action": reverse("tipo_evento_update", args=[pk]),
+        "titulo_pagina": "Editar tipo de evento",
+        "submit_label": "Salvar alterações",
+    }
+    return render(request, "configuracoes/tipo_evento_form.html", context)
+
+
+def tipo_evento_delete(request, pk):
+    tipo_evento = get_object_or_404(TipoEventoPeca, pk=pk)
+
+    if request.method == "POST":
+        tipo_evento.delete()
+        return redirect("tipos_evento_list")
+
+    return render(
+        request,
+        "configuracoes/tipo_evento_confirm_delete.html",
+        {"tipo_evento": tipo_evento},
+    )
 
 
 def exposicoes_list(request):

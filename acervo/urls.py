@@ -20,5 +20,13 @@ urlpatterns = [
     path("configuracoes/eixos/adicionar/", views.eixo_create, name="eixo_create"),
     path("configuracoes/eixos/<int:pk>/editar/", views.eixo_update, name="eixo_update"),
     path("configuracoes/eixos/<int:pk>/excluir/", views.eixo_delete, name="eixo_delete"),
+    path("configuracoes/locais-internos/", views.locais_internos_list, name="locais_internos_list"),
+    path("configuracoes/locais-internos/adicionar/", views.local_interno_create, name="local_interno_create"),
+    path("configuracoes/locais-internos/<int:pk>/editar/", views.local_interno_update, name="local_interno_update"),
+    path("configuracoes/locais-internos/<int:pk>/excluir/", views.local_interno_delete, name="local_interno_delete"),
+    path("configuracoes/tipos-evento/", views.tipos_evento_list, name="tipos_evento_list"),
+    path("configuracoes/tipos-evento/adicionar/", views.tipo_evento_create, name="tipo_evento_create"),
+    path("configuracoes/tipos-evento/<int:pk>/editar/", views.tipo_evento_update, name="tipo_evento_update"),
+    path("configuracoes/tipos-evento/<int:pk>/excluir/", views.tipo_evento_delete, name="tipo_evento_delete"),
 ]
 

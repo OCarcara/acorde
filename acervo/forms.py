@@ -1,7 +1,15 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Midia, PecasAcervo, Pessoa, Exposicao, EixoOrganizador
+from .models import (
+    Midia,
+    PecasAcervo,
+    Pessoa,
+    Exposicao,
+    EixoOrganizador,
+    LocalInterno,
+    TipoEventoPeca,
+)
 
 
 class PecasAcervoForm(forms.ModelForm):
@@ -265,6 +273,56 @@ class EixoOrganizadorForm(forms.ModelForm):
 
         if self.is_bound and self.errors.get("eixo"):
             add_class(self.fields["eixo"].widget, "is-invalid")
+
+
+class LocalInternoForm(forms.ModelForm):
+    class Meta:
+        model = LocalInterno
+        fields = ["local"]
+        labels = {"local": "Local na ACORDE"}
+        error_messages = {
+            "local": {"required": "Informe o local interno."},
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        add_class(self.fields["local"].widget, "form-control")
+
+        if self.is_bound and self.errors.get("local"):
+            add_class(self.fields["local"].widget, "is-invalid")
+
+
+class TipoEventoPecaForm(forms.ModelForm):
+    class Meta:
+        model = TipoEventoPeca
+        fields = ["desc_evento"]
+        labels = {"desc_evento": "Descrição do evento"}
+        error_messages = {
+            "desc_evento": {"required": "Informe a descrição do evento."},
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        add_class(self.fields["desc_evento"].widget, "form-control")
+
+        if self.is_bound and self.errors.get("desc_evento"):
+            add_class(self.fields["desc_evento"].widget, "is-invalid")
 
 
 class ExposicaoForm(forms.ModelForm):

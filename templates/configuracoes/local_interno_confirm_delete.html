@@ -1,0 +1,22 @@
+{% extends "partials/_base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-3">Excluir local interno</h2>
+            <div class="alert alert-warning" role="alert">
+                Tem certeza de que deseja excluir <strong>{{ local_interno.local }}</strong>?
+                Esta ação não poderá ser desfeita.
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+                    <a href="{% url 'locais_internos_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
