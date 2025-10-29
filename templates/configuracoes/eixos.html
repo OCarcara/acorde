@@ -16,7 +16,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Nome do eixo</th>
-                    <th class="text-center">Acoes</th>
+                    <th class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,15 +27,13 @@
                                 {{ eixo.eixo }}
                             </a>
                         </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{% url 'eixo_update' eixo.pk %}" class="btn btn-outline-primary">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </a>
-                                <a href="{% url 'eixo_delete' eixo.pk %}" class="btn btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Excluir
-                                </a>
-                            </div>
+                        <td class="text-center text-nowrap">
+                            <a href="{% url 'eixo_update' eixo.pk %}" class="btn btn-sm btn-outline-secondary me-1">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="{% url 'eixo_delete' eixo.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Excluir
+                            </a>
                         </td>
                     </tr>
                 {% empty %}

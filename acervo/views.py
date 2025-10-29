@@ -181,7 +181,7 @@ def eixo_update(request, pk):
         "eixo": eixo,
         "form_action": reverse("eixo_update", args=[pk]),
         "titulo_pagina": "Editar eixo organizador",
-        "submit_label": "Salvar altera����es",
+        "submit_label": "Salvar alterações",
     }
     return render(request, "configuracoes/eixo_form.html", context)
 

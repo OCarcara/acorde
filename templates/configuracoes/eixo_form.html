@@ -41,7 +41,9 @@
         </div>
 
         <div class="mt-4 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary">{{ submit_label|default:"Salvar" }}</button>
+            <button type="submit" class="btn btn-primary">
+                {% if eixo %}Salvar alterações{% else %}{{ submit_label|default:"Salvar" }}{% endif %}
+            </button>
             <a href="{% url 'eixos_list' %}" class="btn btn-outline-secondary">Cancelar</a>
             {% if eixo %}
                 <a href="{% url 'eixo_delete' eixo.pk %}" class="btn btn-outline-danger ms-auto">Excluir eixo</a>
