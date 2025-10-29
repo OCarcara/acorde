@@ -33,15 +33,13 @@
                         <td>{{ exposicao.data_inicio|date:"d/m/Y" }}</td>
                         <td>{{ exposicao.data_final|date:"d/m/Y" }}</td>
                         <td>{{ exposicao.local }}</td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{% url 'exposicao_update' exposicao.pk %}" class="btn btn-outline-primary" title="Editar">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </a>
-                                <a href="{% url 'exposicao_delete' exposicao.pk %}" class="btn btn-outline-danger" title="Excluir">
-                                    <i class="bi bi-trash"></i> Excluir
-                                </a>
-                            </div>
+                        <td class="text-center text-nowrap">
+                            <a href="{% url 'exposicao_update' exposicao.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Editar">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="{% url 'exposicao_delete' exposicao.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                <i class="bi bi-trash"></i> Excluir
+                            </a>
                         </td>
                     </tr>
                 {% empty %}
