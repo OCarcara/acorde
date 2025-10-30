@@ -8,6 +8,26 @@ urlpatterns = [
     path("pecas/adicionar/", views.peca_create, name="peca_create"),
     path("pecas/<int:pk>/editar/", views.peca_update, name="peca_update"),
     path("pecas/<int:pk>/excluir/", views.peca_delete, name="peca_delete"),
+    path(
+        "pecas/<int:peca_pk>/historico/",
+        views.peca_historico_list,
+        name="peca_historico_list",
+    ),
+    path(
+        "pecas/<int:peca_pk>/historico/adicionar/",
+        views.peca_historico_create,
+        name="peca_historico_create",
+    ),
+    path(
+        "pecas/<int:peca_pk>/historico/<int:pk>/editar/",
+        views.peca_historico_update,
+        name="peca_historico_update",
+    ),
+    path(
+        "pecas/<int:peca_pk>/historico/<int:pk>/excluir/",
+        views.peca_historico_delete,
+        name="peca_historico_delete",
+    ),
     path("pessoas/", views.pessoas_list, name="pessoas_list"),
     path("pessoas/adicionar/", views.pessoa_create, name="pessoa_create"),
     path("pessoas/<int:pk>/editar/", views.pessoa_update, name="pessoa_update"),

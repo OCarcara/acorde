@@ -1,0 +1,29 @@
+{% extends "partials/_base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-3">Excluir histórico da peça</h2>
+            <div class="alert alert-warning" role="alert">
+                <p class="mb-2">
+                    Voce esta prestes a excluir o historico <strong>{{ historico.tipo_evento }}</strong>
+                    da peca <strong>{{ peca.denominacao }}</strong>.
+                </p>
+                <p class="mb-0">
+                    Periodo: {{ historico.data_inicio|date:"d/m/Y" }} - {{ historico.data_final|date:"d/m/Y" }}.
+                    Esta acao nao pode ser desfeita.
+                </p>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-danger">Confirmar exclusao</button>
+                    <a href="{% url 'peca_historico_list' peca.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    <a href="{% url 'peca_update' peca.pk %}" class="btn btn-outline-secondary ms-auto">Voltar a peça</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

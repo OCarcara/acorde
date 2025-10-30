@@ -1,0 +1,62 @@
+{% extends "partials/_base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8">
+            <h2 class="mb-0">{{ titulo_pagina|default:"Histórico da peça" }}</h2>
+            <h4 class="mb-0 text-muted">Peça: {{ peca.denominacao }}</h4>
+        </div>
+        <div class="col-md-4 mt-3 mt-md-0">
+            <div class="d-flex justify-content-md-end flex-wrap gap-2">
+                <a href="{% url 'peca_historico_list' peca.pk %}" class="btn btn-outline-secondary">Voltar ao histórico</a>
+                <a href="{% url 'peca_update' peca.pk %}" class="btn btn-outline-secondary">Voltar a peça</a>
+            </div>
+        </div>
+    </div>
+
+    <form action="{{ form_action|default:'' }}" method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="row g-3">
+            {% with field=form.tipo_evento col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.responsavel col_class="col-md-6" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.data_inicio col_class="col-md-3" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.data_final col_class="col-md-3" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+
+            {% with field=form.descricao col_class="col-12" %}
+                {% include "pecas/partials/_form_field.html" %}
+            {% endwith %}
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{{ submit_label|default:"Salvar" }}</button>
+            <a href="{% url 'peca_historico_list' peca.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+            {% if historico %}
+                <a href="{% url 'peca_historico_delete' peca.pk historico.pk %}" class="btn btn-outline-danger ms-auto">Excluir histórico</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

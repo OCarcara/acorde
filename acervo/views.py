@@ -9,6 +9,7 @@ from .forms import (
     EixoOrganizadorForm,
     LocalInternoForm,
     TipoEventoPecaForm,
+    HistoricoPecaForm,
 )
 from .models import (
     PecasAcervo,
@@ -17,6 +18,7 @@ from .models import (
     EixoOrganizador,
     LocalInterno,
     TipoEventoPeca,
+    HistoricoPecas,
 )
 
 
@@ -101,6 +103,81 @@ def peca_delete(request, pk):
         return redirect("pecas_acervo")
 
     return render(request, "pecas/peca_confirm_delete.html", {"peca": peca})
+
+
+def peca_historico_list(request, peca_pk):
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    historicos = (
+        HistoricoPecas.objects.filter(peca=peca)
+        .select_related("tipo_evento", "responsavel")
+        .order_by("-data_inicio", "-pk")
+    )
+    context = {
+        "peca": peca,
+        "historicos": historicos,
+    }
+    return render(request, "pecas/historico_peca_list.html", context)
+
+
+def peca_historico_create(request, peca_pk):
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+
+    if request.method == "POST":
+        form = HistoricoPecaForm(request.POST)
+        if form.is_valid():
+            historico = form.save(commit=False)
+            historico.peca = peca
+            historico.save()
+            return redirect("peca_historico_list", peca_pk=peca.pk)
+    else:
+        form = HistoricoPecaForm()
+
+    context = {
+        "form": form,
+        "peca": peca,
+        "form_action": reverse("peca_historico_create", args=[peca.pk]),
+        "titulo_pagina": "Adicionar historico",
+        "submit_label": "Adicionar historico",
+    }
+    return render(request, "pecas/historico_peca_form.html", context)
+
+
+def peca_historico_update(request, peca_pk, pk):
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    historico = get_object_or_404(HistoricoPecas, pk=pk, peca=peca)
+
+    if request.method == "POST":
+        form = HistoricoPecaForm(request.POST, instance=historico)
+        if form.is_valid():
+            form.save()
+            return redirect("peca_historico_list", peca_pk=peca.pk)
+    else:
+        form = HistoricoPecaForm(instance=historico)
+
+    context = {
+        "form": form,
+        "peca": peca,
+        "historico": historico,
+        "form_action": reverse("peca_historico_update", args=[peca.pk, pk]),
+        "titulo_pagina": "Editar histórico",
+        "submit_label": "Salvar alteracoes",
+    }
+    return render(request, "pecas/historico_peca_form.html", context)
+
+
+def peca_historico_delete(request, peca_pk, pk):
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    historico = get_object_or_404(HistoricoPecas, pk=pk, peca=peca)
+
+    if request.method == "POST":
+        historico.delete()
+        return redirect("peca_historico_list", peca_pk=peca.pk)
+
+    context = {
+        "peca": peca,
+        "historico": historico,
+    }
+    return render(request, "pecas/historico_peca_confirm_delete.html", context)
 
 
 def pessoas_list(request):

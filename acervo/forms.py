@@ -9,6 +9,7 @@ from .models import (
     EixoOrganizador,
     LocalInterno,
     TipoEventoPeca,
+    HistoricoPecas,
 )
 
 
@@ -323,6 +324,78 @@ class TipoEventoPecaForm(forms.ModelForm):
 
         if self.is_bound and self.errors.get("desc_evento"):
             add_class(self.fields["desc_evento"].widget, "is-invalid")
+
+
+class HistoricoPecaForm(forms.ModelForm):
+    data_inicio = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        input_formats=["%Y-%m-%d"],
+    )
+    data_final = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        input_formats=["%Y-%m-%d"],
+    )
+
+    class Meta:
+        model = HistoricoPecas
+        fields = [
+            "tipo_evento",
+            "responsavel",
+            "descricao",
+            "data_inicio",
+            "data_final",
+        ]
+        labels = {
+            "tipo_evento": "Tipo do evento",
+            "responsavel": "Responsavel",
+            "descricao": "Detalhamento do evento",
+            "data_inicio": "Data de inicio",
+            "data_final": "Data final",
+        }
+        widgets = {
+            "descricao": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(
+                widget,
+                (
+                    forms.TextInput,
+                    forms.Select,
+                    forms.Textarea,
+                    forms.DateInput,
+                ),
+            ):
+                add_class(widget, "form-control")
+
+        if self.is_bound:
+            for name, field in self.fields.items():
+                if self.errors.get(name):
+                    add_class(field.widget, "is-invalid")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        data_inicio = cleaned_data.get("data_inicio")
+        data_final = cleaned_data.get("data_final")
+
+        if data_inicio and data_final and data_inicio > data_final:
+            raise forms.ValidationError(
+                "A data final deve ser igual ou posterior a data de inicio."
+            )
+        return cleaned_data
 
 
 class ExposicaoForm(forms.ModelForm):

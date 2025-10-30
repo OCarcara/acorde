@@ -176,7 +176,7 @@ class HistoricoPecas(models.Model):
 
     peca = models.ForeignKey(PecasAcervo, on_delete=models.CASCADE)
     tipo_evento = models.ForeignKey(TipoEventoPeca, on_delete=models.CASCADE)
-    responsavel = models.ForeignKey(Pessoa, on_delete=models.SET_NULL, null=True)
+    responsavel = models.ForeignKey(Pessoa, on_delete=models.SET_NULL, null=True, blank=True)
     descricao = models.TextField('Detalhamento do evento', null=True, blank=True)
     data_inicio = models.DateField('Data de início', null=False, blank=False, default=datetime.date.today)
     data_final = models.DateField('Data final', null=False, blank=False, default=datetime.date.today)
@@ -186,4 +186,4 @@ class HistoricoPecas(models.Model):
         verbose_name_plural = "Históricos da Peça"
 
     def __str__(self):
-        return f"{self.peca} - {self.tipo} - De {format(self.data_inicio, 'd/m/Y')} a {format(self.data_final, 'd/m/Y')}"
+        return f"{self.peca} - {self.tipo_evento} - De {format(self.data_inicio, 'd/m/Y')} a {format(self.data_final, 'd/m/Y')}"
