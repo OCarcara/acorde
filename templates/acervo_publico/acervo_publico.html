@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Memorial Olhos D'Água - Acervo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --marrom-escuro: #5a2809;
+            --texto-principal: #353333;
+            --titulo-principal: #000000;
+            --cinza-claro: #f5f3ef;
+            --cinza-borda: #d9d4ce;
+            --cor-realce: #b3672b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            color: var(--texto-principal);
+            background: #ffffff;
+        }
+
+        .pagina {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 24px 72px;
+        }
+
+        header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--marrom-escuro);
+            margin: 0;
+        }
+
+        header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--titulo-principal);
+            margin: 12px 0 32px;
+        }
+
+        .controles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .grupo-botoes {
+            display: flex;
+            gap: 12px;
+        }
+
+        .filtro-botao {
+            padding: 12px 20px;
+            border: 1px solid var(--marrom-escuro);
+            border-radius: 24px;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--marrom-escuro);
+            background: transparent;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .filtro-botao:hover,
+        .filtro-botao:focus {
+            background: rgba(90, 40, 9, 0.08);
+            outline: none;
+        }
+
+        .filtro-botao.ativo {
+            background: var(--marrom-escuro);
+            color: #ffffff;
+        }
+
+        .form-pesquisa {
+            display: flex;
+            gap: 12px;
+            flex: 1 1 320px;
+        }
+
+        .form-pesquisa input[type="search"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--cinza-borda);
+            border-radius: 24px;
+            font-size: 16px;
+        }
+
+        .form-pesquisa button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 24px;
+            background: var(--cor-realce);
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+
+        .form-pesquisa button:hover,
+        .form-pesquisa button:focus {
+            background: #8d4f1f;
+            outline: none;
+        }
+
+        .secao {
+            margin-bottom: 48px;
+        }
+
+        .secao h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 20px;
+            color: var(--marrom-escuro);
+        }
+
+        .grid-cartoes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .cartao-peca {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--cinza-borda);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .cartao-peca:hover,
+        .cartao-peca:focus {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+            outline: none;
+        }
+
+        .cartao-imagem {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: var(--cinza-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .cartao-imagem img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cartao-conteudo {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cartao-titulo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--titulo-principal);
+            margin: 0;
+        }
+
+        .cartao-autor {
+            font-size: 14px;
+            color: #5b5959;
+            margin: 0;
+        }
+
+        .cartao-resumo {
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .mensagem {
+            padding: 24px;
+            border: 1px dashed var(--cinza-borda);
+            border-radius: 12px;
+            background: #faf7f4;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            header h2 {
+                font-size: 28px;
+            }
+
+            .controles {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .grupo-botoes {
+                justify-content: flex-start;
+            }
+
+            .form-pesquisa {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pagina">
+        <header>
+            <h1>Memorial Olhos D'Água</h1>
+            <h2>ACERVO DO MEMORIAL</h2>
+        </header>
+
+        <div class="controles">
+            <div class="grupo-botoes" role="group" aria-label="Modos de visualização do acervo">
+                <a href="?modo=eixo{% if busca %}&amp;q={{ busca|urlencode }}{% endif %}"
+                   class="filtro-botao{% if modo == 'eixo' and not mostrando_busca %} ativo{% endif %}">
+                    Eixo Organizador
+                </a>
+                <a href="?modo=local{% if busca %}&amp;q={{ busca|urlencode }}{% endif %}"
+                   class="filtro-botao{% if modo == 'local' and not mostrando_busca %} ativo{% endif %}">
+                    Por local no acervo
+                </a>
+            </div>
+            <form method="get" class="form-pesquisa" role="search">
+                <input type="hidden" name="modo" value="{{ modo }}">
+                <input type="search"
+                       name="q"
+                       placeholder="Busque por nome da peça ou autor"
+                       value="{{ busca }}"
+                       aria-label="Buscar por peças ou autores">
+                <button type="submit">Pesquisar</button>
+            </form>
+        </div>
+
+        {% if mostrando_busca %}
+            <section class="secao">
+                <h3>Resultados da busca{% if busca %} para “{{ busca }}”{% endif %}</h3>
+
+                {% if resultados %}
+                    <div class="grid-cartoes">
+                        {% for peca in resultados %}
+                            <a class="cartao-peca" href="{% url 'acervo_publico_peca' peca.pk %}">
+                                <div class="cartao-imagem">
+                                    {% with midia=peca.midias.all|first %}
+                                        {% if midia and midia.url_midia %}
+                                            <img src="{{ midia.url_midia.url }}" alt="Imagem da peça {{ peca.denominacao }}">
+                                        {% else %}
+                                            <span>Imagem não disponível</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                <div class="cartao-conteudo">
+                                    <h4 class="cartao-titulo">{{ peca.denominacao }}</h4>
+                                    {% with autores=peca.autor.all %}
+                                        <p class="cartao-autor">
+                                            {% if autores %}
+                                                Autor{% if autores|length > 1 %}es{% endif %}:
+                                                {% for autor in autores %}
+                                                    {{ autor.nome }}{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                Autor não informado
+                                            {% endif %}
+                                        </p>
+                                    {% endwith %}
+                                    <p class="cartao-resumo">{{ peca.resumo_descritivo|truncatechars:220 }}</p>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mensagem">
+                        Nenhum item foi encontrado para a busca realizada. Tente outros termos ou verifique a grafia.
+                    </div>
+                {% endif %}
+            </section>
+        {% else %}
+            {% if grupos %}
+                {% for grupo in grupos %}
+                    <section class="secao">
+                        <h3>{{ grupo.titulo }}</h3>
+                        <div class="grid-cartoes">
+                            {% for peca in grupo.pecas %}
+                                <a class="cartao-peca" href="{% url 'acervo_publico_peca' peca.pk %}">
+                                    <div class="cartao-imagem">
+                                        {% with midia=peca.midias.all|first %}
+                                            {% if midia and midia.url_midia %}
+                                                <img src="{{ midia.url_midia.url }}" alt="Imagem da peça {{ peca.denominacao }}">
+                                            {% else %}
+                                                <span>Imagem não disponível</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    <div class="cartao-conteudo">
+                                        <h4 class="cartao-titulo">{{ peca.denominacao }}</h4>
+                                        {% with autores=peca.autor.all %}
+                                            <p class="cartao-autor">
+                                                {% if autores %}
+                                                    Autor{% if autores|length > 1 %}es{% endif %}:
+                                                    {% for autor in autores %}
+                                                        {{ autor.nome }}{% if not forloop.last %}, {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    Autor não informado
+                                                {% endif %}
+                                            </p>
+                                        {% endwith %}
+                                        <p class="cartao-resumo">{{ peca.resumo_descritivo|truncatechars:220 }}</p>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endfor %}
+            {% else %}
+                <div class="mensagem">
+                    Ainda não há peças publicadas no acervo.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

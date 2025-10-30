@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -19,6 +22,7 @@ from .models import (
     LocalInterno,
     TipoEventoPeca,
     HistoricoPecas,
+    Midia,
 )
 
 
@@ -456,3 +460,92 @@ def exposicao_delete(request, pk):
         return redirect("exposicoes_list")
 
     return render(request, "exposicoes/exposicao_confirm_delete.html", {"exposicao": exposicao})
+
+
+def acervo_publico(request):
+    modo = request.GET.get("modo", "eixo")
+    if modo not in {"eixo", "local"}:
+        modo = "eixo"
+
+    termo_busca = request.GET.get("q", "").strip()
+
+    midias_prefetch = Prefetch("midias", queryset=Midia.objects.order_by("pk"))
+    autores_prefetch = Prefetch("autor", queryset=Pessoa.objects.order_by("nome"))
+
+    pecas_base = (
+        PecasAcervo.objects.filter(publicada=True)
+        .select_related("eixo_organizador", "localizacao_interna")
+        .prefetch_related(autores_prefetch, midias_prefetch)
+        .order_by("denominacao")
+    )
+
+    resultados = []
+    grupos = []
+
+    if termo_busca:
+        resultados = list(
+            pecas_base.filter(
+                Q(denominacao__icontains=termo_busca)
+                | Q(autor__nome__icontains=termo_busca)
+            )
+            .distinct()
+            .order_by("denominacao")
+        )
+    else:
+        agrupador = defaultdict(list)
+
+        if modo == "local":
+            ordenadas = pecas_base.order_by("localizacao_interna__local", "denominacao")
+            for peca in ordenadas:
+                chave = (
+                    peca.localizacao_interna.local
+                    if peca.localizacao_interna
+                    else "Local não informado"
+                )
+                agrupador[chave].append(peca)
+        else:
+            ordenadas = pecas_base.order_by("eixo_organizador__eixo", "denominacao")
+            for peca in ordenadas:
+                chave = (
+                    peca.eixo_organizador.eixo
+                    if peca.eixo_organizador
+                    else "Eixo não informado"
+                )
+                agrupador[chave].append(peca)
+
+        grupos = [
+            {"titulo": chave, "pecas": itens}
+            for chave, itens in sorted(agrupador.items(), key=lambda item: item[0])
+        ]
+
+    context = {
+        "modo": modo,
+        "busca": termo_busca,
+        "grupos": grupos,
+        "resultados": resultados,
+        "mostrando_busca": bool(termo_busca),
+    }
+    return render(request, "acervo_publico/acervo_publico.html", context)
+
+
+def acervo_publico_peca(request, pk):
+    midias_prefetch = Prefetch("midias", queryset=Midia.objects.order_by("pk"))
+    autores_prefetch = Prefetch("autor", queryset=Pessoa.objects.order_by("nome"))
+
+    peca = get_object_or_404(
+        PecasAcervo.objects.filter(publicada=True)
+        .select_related(
+            "eixo_organizador",
+            "exposicao",
+            "localizacao_interna",
+        )
+        .prefetch_related(autores_prefetch, midias_prefetch),
+        pk=pk,
+    )
+
+    context = {
+        "peca": peca,
+        "midias": list(peca.midias.all()),
+        "autores": list(peca.autor.all()),
+    }
+    return render(request, "acervo_publico/peca_detalhe.html", context)

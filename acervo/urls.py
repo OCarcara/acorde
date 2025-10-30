@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("memorial/", views.acervo_publico, name="acervo_publico"),
+    path("memorial/peca/<int:pk>/", views.acervo_publico_peca, name="acervo_publico_peca"),
     path("pecas/", views.pecas_acervo, name="pecas_acervo"),
     path("pecas/adicionar/", views.peca_create, name="peca_create"),
     path("pecas/<int:pk>/editar/", views.peca_update, name="peca_update"),
