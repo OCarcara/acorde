@@ -237,11 +237,11 @@
 
         <div class="controles">
             <div class="grupo-botoes" role="group" aria-label="Modos de visualização do acervo">
-                <a href="?modo=eixo{% if busca %}&amp;q={{ busca|urlencode }}{% endif %}"
+                <a href="?modo=eixo"
                    class="filtro-botao{% if modo == 'eixo' and not mostrando_busca %} ativo{% endif %}">
                     Eixo Organizador
                 </a>
-                <a href="?modo=local{% if busca %}&amp;q={{ busca|urlencode }}{% endif %}"
+                <a href="?modo=local"
                    class="filtro-botao{% if modo == 'local' and not mostrando_busca %} ativo{% endif %}">
                     Por local no acervo
                 </a>
@@ -344,5 +344,23 @@
             {% endif %}
         {% endif %}
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var searchForm = document.querySelector(".form-pesquisa");
+            if (!searchForm) {
+                return;
+            }
+            var searchInput = searchForm.querySelector('input[type="search"]');
+            if (!searchInput) {
+                return;
+            }
+            searchInput.addEventListener("search", function () {
+                if (!searchInput.value.trim()) {
+                    searchInput.value = "";
+                    searchForm.submit();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

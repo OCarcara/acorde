@@ -180,6 +180,16 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            margin-top: 24px;
+        }
+
+        .texto-destaque {
+            margin-bottom: 24px;
+        }
+
+        .texto-destaque .rotulo {
+            display: inline-block;
+            margin-bottom: 8px;
         }
 
         @media (max-width: 960px) {
@@ -233,12 +243,14 @@
             </section>
 
             <section class="detalhes">
-                {% if peca.resumo_descritivo %}
-                    <p class="resumo">{{ peca.resumo_descritivo }}</p>
-                {% endif %}
-
                 <div class="bloco">
                     <h2>Informações gerais</h2>
+                    {% if peca.resumo_descritivo %}
+                        <div class="texto-destaque">
+                            <span class="rotulo">Descrição</span>
+                            <p class="resumo">{{ peca.resumo_descritivo }}</p>
+                        </div>
+                    {% endif %}
                     <div class="lista-dados">
                         {% if peca.titulo_dado_pelo_autor %}
                             <div class="item-dado">
@@ -335,11 +347,7 @@
                             <span class="valor">{{ peca.pode_reproduzir|yesno:"Sim,Não" }}</span>
                         </div>
                     </div>
-                </div>
-
-                {% if peca.material_tecnica or peca.condicoes_reproducao %}
-                    <div class="bloco">
-                        <h2>Materiais e condições</h2>
+                    {% if peca.material_tecnica or peca.condicoes_reproducao %}
                         <div class="texto-longos">
                             {% if peca.material_tecnica %}
                                 <div>
@@ -354,8 +362,8 @@
                                 </div>
                             {% endif %}
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </section>
         </div>
     </div>
