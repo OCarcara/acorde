@@ -54,47 +54,73 @@
             margin: 12px 0 32px;
         }
 
-        .controles {
+        .filtros {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 16px;
-            align-items: center;
             margin-bottom: 32px;
         }
 
-        .grupo-botoes {
+        .linha-filtros {
             display: flex;
-            gap: 12px;
+            gap: 16px;
+            align-items: flex-end;
         }
 
-        .filtro-botao {
-            padding: 12px 20px;
-            border: 1px solid var(--marrom-escuro);
-            border-radius: 24px;
-            text-decoration: none;
+        .linha-filtros-dupla .campo {
+            flex: 1;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .campo label {
             font-family: 'Montserrat', sans-serif;
             font-size: 14px;
             font-weight: 600;
             color: var(--marrom-escuro);
-            background: transparent;
-            transition: all 0.2s ease-in-out;
         }
 
-        .filtro-botao:hover,
-        .filtro-botao:focus {
-            background: rgba(90, 40, 9, 0.08);
-            outline: none;
+        .grupo-radio {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .filtro-botao.ativo {
-            background: var(--marrom-escuro);
-            color: #ffffff;
+        .grupo-radio label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            color: var(--texto-principal);
+            cursor: pointer;
+        }
+
+        .grupo-radio input[type="radio"] {
+            accent-color: var(--marrom-escuro);
+        }
+
+        .campo-exposicao select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--cinza-borda);
+            border-radius: 24px;
+            font-size: 16px;
+        }
+
+        .campo-exposicao,
+        .campo-pesquisa {
+            flex: 1;
         }
 
         .form-pesquisa {
             display: flex;
             gap: 12px;
-            flex: 1 1 320px;
+            width: 100%;
         }
 
         .form-pesquisa input[type="search"] {
@@ -217,18 +243,35 @@
                 font-size: 28px;
             }
 
-            .controles {
+            .filtros {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .grupo-botoes {
-                justify-content: flex-start;
+            .linha-filtros {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .linha-filtros-dupla .campo {
+                width: 100%;
+            }
+
+            .grupo-radio {
+                flex-direction: column;
+                align-items: flex-start;
             }
 
             .form-pesquisa {
+                flex-direction: column;
+            }
+
+            .form-pesquisa button {
                 width: 100%;
-                flex: none;
+            }
+
+            .campo-exposicao select {
+                width: 100%;
             }
         }
     </style>
@@ -240,35 +283,101 @@
             <h2>ACERVO DO MEMORIAL</h2>
         </header>
 
-        <div class="controles">
-            <div class="grupo-botoes" role="group" aria-label="Modos de visualização do acervo">
-                <a href="?modo=eixo"
-                   class="filtro-botao{% if modo == 'eixo' and not mostrando_busca %} ativo{% endif %}">
-                    Eixo Organizador
-                </a>
-                <a href="?modo=local"
-                   class="filtro-botao{% if modo == 'local' and not mostrando_busca %} ativo{% endif %}">
-                    Por local no acervo
-                </a>
+        
+<form method="get" class="filtros" id="filtros-form">
+            <div class="linha-filtros">
+                <div class="campo">
+                    <label class="rotulo-campo">Tipo do acervo</label>
+                    <div class="grupo-radio">
+                        <label for="tipo-fisico">
+                            <input type="radio" name="tipo" id="tipo-fisico" value="fisico" {% if tipo == 'fisico' %}checked{% endif %}>
+                            Físico
+                        </label>
+                        <label for="tipo-digital">
+                            <input type="radio" name="tipo" id="tipo-digital" value="digital" {% if tipo == 'digital' %}checked{% endif %}>
+                            Digital
+                        </label>
+                    </div>
+                </div>
             </div>
-            <form method="get" class="form-pesquisa" role="search">
-                <input type="hidden" name="modo" value="{{ modo }}">
-                <input type="search"
-                       name="q"
-                       placeholder="Busque por nome da peça ou autor"
-                       value="{{ busca }}"
-                       aria-label="Buscar por peças ou autores">
-                <button type="submit">Pesquisar</button>
-            </form>
-        </div>
+            <div class="linha-filtros linha-filtros-dupla">
+                <div class="campo campo-exposicao">
+                    <label for="id_exposicao">Exposição</label>
+                    <select name="exposicao" id="id_exposicao">
+                        <option value="">Todas as exposições</option>
+                        {% for expo in exposicoes %}
+                            <option value="{{ expo.pk }}" {% if exposicao_param == expo.pk|stringformat:'s' %}selected{% endif %}>{{ expo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        {% if mostrando_busca %}
-            <section class="secao">
-                <h3>Resultados da busca{% if busca %} para “{{ busca }}”{% endif %}</h3>
+                <div class="campo campo-pesquisa">
+                    <label for="id_q">Pesquisa textual</label>
+                    <div class="form-pesquisa" role="search">
+                        <input type="search"
+                               id="id_q"
+                               name="q"
+                               placeholder="Busque por nome da peça ou autor"
+                               value="{{ busca }}"
+                               aria-label="Buscar por peças ou autores">
+                        <button type="submit">Pesquisar</button>
+                    </div>
+                </div>
+            </div>
+        </form>
 
-                {% if resultados %}
+
+
+{% if mostrando_busca %}
+    <section class="secao">
+        <h3>Resultados da busca{% if busca %} para "{{ busca }}"{% endif %}</h3>
+
+        {% if resultados %}
+            <div class="grid-cartoes">
+                {% for peca in resultados %}
+                    <a class="cartao-peca" href="{% url 'acervo_publico_peca' peca.pk %}">
+                        <div class="cartao-imagem">
+                            {% with midia=peca.midias.all|first %}
+                                {% if midia and midia.url_midia %}
+                                    <img src="{{ midia.url_midia.url }}" alt="Imagem da peça {{ peca.denominacao }}">
+                                {% else %}
+                                    <span>Imagem não disponível</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="cartao-conteudo">
+                            <h4 class="cartao-titulo">{{ peca.denominacao }}</h4>
+                            {% with autores=peca.autor.all %}
+                                <p class="cartao-autor">
+                                    {% if autores %}
+                                        Autor{% if autores|length > 1 %}es{% endif %}:
+                                        {% for autor in autores %}
+                                            {{ autor.nome }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        Autor não informado
+                                    {% endif %}
+                                </p>
+                            {% endwith %}
+                            <p class="cartao-resumo">{{ peca.resumo_descritivo|truncatechars:220 }}</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="mensagem">
+                Nenhum item foi encontrado para a busca realizada. Tente outros termos ou verifique a grafia.
+            </div>
+        {% endif %}
+    </section>
+{% else %}
+    {% if tipo == 'fisico' %}
+        {% if grupos %}
+            {% for grupo in grupos %}
+                <section class="secao">
+                    <h3>{{ grupo.titulo }}</h3>
                     <div class="grid-cartoes">
-                        {% for peca in resultados %}
+                        {% for peca in grupo.pecas %}
                             <a class="cartao-peca" href="{% url 'acervo_publico_peca' peca.pk %}">
                                 <div class="cartao-imagem">
                                     {% with midia=peca.midias.all|first %}
@@ -298,74 +407,120 @@
                             </a>
                         {% endfor %}
                     </div>
-                {% else %}
-                    <div class="mensagem">
-                        Nenhum item foi encontrado para a busca realizada. Tente outros termos ou verifique a grafia.
-                    </div>
-                {% endif %}
+                </section>
+            {% endfor %}
+        {% else %}
+            <div class="mensagem">
+                Nenhuma peça encontrada para os filtros selecionados.
+            </div>
+        {% endif %}
+    {% else %}
+        {% if resultados %}
+            <section class="secao">
+                <div class="grid-cartoes">
+                    {% for peca in resultados %}
+                        <a class="cartao-peca" href="{% url 'acervo_publico_peca' peca.pk %}">
+                            <div class="cartao-imagem">
+                                {% with midia=peca.midias.all|first %}
+                                    {% if midia and midia.url_midia %}
+                                        <img src="{{ midia.url_midia.url }}" alt="Imagem da peça {{ peca.denominacao }}">
+                                    {% else %}
+                                        <span>Imagem não disponível</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                            <div class="cartao-conteudo">
+                                <h4 class="cartao-titulo">{{ peca.denominacao }}</h4>
+                                {% with autores=peca.autor.all %}
+                                    <p class="cartao-autor">
+                                        {% if autores %}
+                                            Autor{% if autores|length > 1 %}es{% endif %}:
+                                            {% for autor in autores %}
+                                                {{ autor.nome }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            Autor não informado
+                                        {% endif %}
+                                    </p>
+                                {% endwith %}
+                                <p class="cartao-resumo">{{ peca.resumo_descritivo|truncatechars:220 }}</p>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
             </section>
         {% else %}
-            {% if grupos %}
-                {% for grupo in grupos %}
-                    <section class="secao">
-                        <h3>{{ grupo.titulo }}</h3>
-                        <div class="grid-cartoes">
-                            {% for peca in grupo.pecas %}
-                                <a class="cartao-peca" href="{% url 'acervo_publico_peca' peca.pk %}">
-                                    <div class="cartao-imagem">
-                                        {% with midia=peca.midias.all|first %}
-                                            {% if midia and midia.url_midia %}
-                                                <img src="{{ midia.url_midia.url }}" alt="Imagem da peça {{ peca.denominacao }}">
-                                            {% else %}
-                                                <span>Imagem não disponível</span>
-                                            {% endif %}
-                                        {% endwith %}
-                                    </div>
-                                    <div class="cartao-conteudo">
-                                        <h4 class="cartao-titulo">{{ peca.denominacao }}</h4>
-                                        {% with autores=peca.autor.all %}
-                                            <p class="cartao-autor">
-                                                {% if autores %}
-                                                    Autor{% if autores|length > 1 %}es{% endif %}:
-                                                    {% for autor in autores %}
-                                                        {{ autor.nome }}{% if not forloop.last %}, {% endif %}
-                                                    {% endfor %}
-                                                {% else %}
-                                                    Autor não informado
-                                                {% endif %}
-                                            </p>
-                                        {% endwith %}
-                                        <p class="cartao-resumo">{{ peca.resumo_descritivo|truncatechars:220 }}</p>
-                                    </div>
-                                </a>
-                            {% endfor %}
-                        </div>
-                    </section>
-                {% endfor %}
-            {% else %}
-                <div class="mensagem">
-                    Ainda não há peças publicadas no acervo.
-                </div>
-            {% endif %}
+            <div class="mensagem">
+                Nenhuma peça encontrada para os filtros selecionados.
+            </div>
         {% endif %}
+    {% endif %}
+{% endif %}
     </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var searchForm = document.querySelector(".form-pesquisa");
-            if (!searchForm) {
-                return;
-            }
-            var searchInput = searchForm.querySelector('input[type="search"]');
-            if (!searchInput) {
-                return;
-            }
+    
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var filtrosForm = document.getElementById("filtros-form");
+        if (!filtrosForm) {
+            return;
+        }
+
+        var searchInput = filtrosForm.querySelector('input[type="search"]');
+        if (searchInput) {
             searchInput.addEventListener("search", function () {
                 if (!searchInput.value.trim()) {
                     searchInput.value = "";
-                    searchForm.submit();
+                    filtrosForm.submit();
                 }
             });
+        }
+
+        var selectExposicao = document.getElementById("id_exposicao");
+        var radiosTipo = filtrosForm.querySelectorAll('input[name="tipo"]');
+        var exposicoesPorTipo = JSON.parse('{{ exposicoes_por_tipo_json|escapejs }}');
+        var tipoAtual = "{{ tipo|escapejs }}";
+        var exposicaoAtual = "{{ exposicao_param|escapejs }}";
+
+        function preencherSelect(tipo, selecionada) {
+            if (!selectExposicao) {
+                return;
+            }
+            var dados = exposicoesPorTipo[tipo] || [];
+            selectExposicao.innerHTML = "";
+            var optionPadrao = document.createElement("option");
+            optionPadrao.value = "";
+            optionPadrao.textContent = "Todas as exposições";
+            selectExposicao.appendChild(optionPadrao);
+            dados.forEach(function (expo) {
+                var opt = document.createElement("option");
+                opt.value = expo.id;
+                opt.textContent = expo.nome;
+                selectExposicao.appendChild(opt);
+            });
+            if (selecionada && dados.some(function (expo) { return expo.id === selecionada; })) {
+                selectExposicao.value = selecionada;
+            }
+        }
+
+        preencherSelect(tipoAtual, exposicaoAtual);
+
+        radiosTipo.forEach(function (radio) {
+            radio.addEventListener("change", function () {
+                preencherSelect(radio.value, "");
+                if (selectExposicao) {
+                    selectExposicao.value = "";
+                }
+                filtrosForm.submit();
+            });
         });
-    </script>
+
+        if (selectExposicao) {
+            selectExposicao.addEventListener("change", function () {
+                filtrosForm.submit();
+            });
+        }
+    });
+</script>
+
 </body>
 </html>

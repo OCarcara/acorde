@@ -1,5 +1,7 @@
 from collections import defaultdict
+import json
 
+from django.contrib import messages
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -417,6 +419,7 @@ def configuracoes_sistema(request):
         form = ConfigsForm(request.POST, instance=configs)
         if form.is_valid():
             form.save()
+            messages.success(request, "Configurações atualizadas.")
             return redirect("config_sistema")
     else:
         form = ConfigsForm(instance=configs)
@@ -484,22 +487,53 @@ def exposicao_delete(request, pk):
     return render(request, "exposicoes/exposicao_confirm_delete.html", {"exposicao": exposicao})
 
 
+
 def acervo_publico(request):
-    modo = request.GET.get("modo", "eixo")
-    if modo not in {"eixo", "local"}:
-        modo = "eixo"
+    tipo = request.GET.get("tipo", "fisico")
+    if tipo not in {"fisico", "digital"}:
+        tipo = "fisico"
+
+    exposicao_param = request.GET.get("exposicao", "").strip()
+    exposicao_id = None
+    if exposicao_param:
+        try:
+            exposicao_id = int(exposicao_param)
+        except ValueError:
+            exposicao_param = ""
 
     termo_busca = request.GET.get("q", "").strip()
 
     midias_prefetch = Prefetch("midias", queryset=Midia.objects.order_by("pk"))
     autores_prefetch = Prefetch("autor", queryset=Pessoa.objects.order_by("nome"))
 
+    exposicoes_por_tipo_qs = {
+        "fisico": Exposicao.objects.filter(exposicao_fisica=True).order_by("nome"),
+        "digital": Exposicao.objects.filter(exposicao_fisica=False).order_by("nome"),
+    }
+
+    exposicoes_para_select = list(exposicoes_por_tipo_qs[tipo])
+    exposicoes_por_tipo_json = json.dumps(
+        {
+            chave: [{"id": str(expo.pk), "nome": expo.nome} for expo in qs]
+            for chave, qs in exposicoes_por_tipo_qs.items()
+        },
+        ensure_ascii=False,
+    )
+
     pecas_base = (
         PecasAcervo.objects.filter(publicada=True)
-        .select_related("eixo_organizador", "localizacao_interna")
+        .select_related("eixo_organizador", "localizacao_interna", "exposicao")
         .prefetch_related(autores_prefetch, midias_prefetch)
         .order_by("denominacao")
     )
+
+    if tipo == "fisico":
+        pecas_base = pecas_base.filter(exposicao__exposicao_fisica=True)
+    elif tipo == "digital":
+        pecas_base = pecas_base.filter(exposicao__exposicao_fisica=False)
+
+    if exposicao_id is not None:
+        pecas_base = pecas_base.filter(exposicao__pk=exposicao_id)
 
     resultados = []
     grupos = []
@@ -514,20 +548,10 @@ def acervo_publico(request):
             .order_by("denominacao")
         )
     else:
-        agrupador = defaultdict(list)
-
-        if modo == "local":
-            ordenadas = pecas_base.order_by("localizacao_interna__local", "denominacao")
-            for peca in ordenadas:
-                chave = (
-                    peca.localizacao_interna.local
-                    if peca.localizacao_interna
-                    else "Local não informado"
-                )
-                agrupador[chave].append(peca)
-        else:
-            ordenadas = pecas_base.order_by("eixo_organizador__eixo", "denominacao")
-            for peca in ordenadas:
+        pecas_list = list(pecas_base)
+        if tipo == "fisico":
+            agrupador = defaultdict(list)
+            for peca in pecas_list:
                 chave = (
                     peca.eixo_organizador.eixo
                     if peca.eixo_organizador
@@ -535,17 +559,25 @@ def acervo_publico(request):
                 )
                 agrupador[chave].append(peca)
 
-        grupos = [
-            {"titulo": chave, "pecas": itens}
-            for chave, itens in sorted(agrupador.items(), key=lambda item: item[0])
-        ]
+            grupos = [
+                {
+                    "titulo": chave,
+                    "pecas": sorted(itens, key=lambda p: p.denominacao),
+                }
+                for chave, itens in sorted(agrupador.items(), key=lambda item: item[0])
+            ]
+        else:
+            resultados = sorted(pecas_list, key=lambda p: p.denominacao)
 
     context = {
-        "modo": modo,
+        "tipo": tipo,
         "busca": termo_busca,
         "grupos": grupos,
         "resultados": resultados,
         "mostrando_busca": bool(termo_busca),
+        "exposicoes": exposicoes_para_select,
+        "exposicoes_por_tipo_json": exposicoes_por_tipo_json,
+        "exposicao_param": exposicao_param,
     }
     return render(request, "acervo_publico/acervo_publico.html", context)
 
