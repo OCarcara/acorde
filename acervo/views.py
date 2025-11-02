@@ -13,6 +13,7 @@ from .forms import (
     LocalInternoForm,
     TipoEventoPecaForm,
     HistoricoPecaForm,
+    ConfigsForm,
 )
 from .models import (
     PecasAcervo,
@@ -23,6 +24,7 @@ from .models import (
     TipoEventoPeca,
     HistoricoPecas,
     Midia,
+    Configs,
 )
 
 
@@ -406,6 +408,26 @@ def tipo_evento_delete(request, pk):
         "configuracoes/tipo_evento_confirm_delete.html",
         {"tipo_evento": tipo_evento},
     )
+
+
+def configuracoes_sistema(request):
+    configs, _created = Configs.objects.get_or_create(pk=1, defaults={"open_ia_key": ""})
+
+    if request.method == "POST":
+        form = ConfigsForm(request.POST, instance=configs)
+        if form.is_valid():
+            form.save()
+            return redirect("config_sistema")
+    else:
+        form = ConfigsForm(instance=configs)
+
+    context = {
+        "form": form,
+        "form_action": reverse("config_sistema"),
+        "titulo_pagina": "Configuracoes do sistema",
+        "submit_label": "Salvar configuracoes",
+    }
+    return render(request, "configs/config_form.html", context)
 
 
 def exposicoes_list(request):

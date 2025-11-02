@@ -42,6 +42,7 @@ urlpatterns = [
     path("configuracoes/eixos/adicionar/", views.eixo_create, name="eixo_create"),
     path("configuracoes/eixos/<int:pk>/editar/", views.eixo_update, name="eixo_update"),
     path("configuracoes/eixos/<int:pk>/excluir/", views.eixo_delete, name="eixo_delete"),
+    path("configuracoes/sistema/", views.configuracoes_sistema, name="config_sistema"),
     path("configuracoes/locais-internos/", views.locais_internos_list, name="locais_internos_list"),
     path("configuracoes/locais-internos/adicionar/", views.local_interno_create, name="local_interno_create"),
     path("configuracoes/locais-internos/<int:pk>/editar/", views.local_interno_update, name="local_interno_update"),

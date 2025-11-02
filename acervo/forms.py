@@ -10,6 +10,7 @@ from .models import (
     LocalInterno,
     TipoEventoPeca,
     HistoricoPecas,
+    Configs,
 )
 
 
@@ -489,3 +490,32 @@ class ExposicaoForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+
+class ConfigsForm(forms.ModelForm):
+    class Meta:
+        model = Configs
+        fields = ["open_ia_key"]
+        labels = {"open_ia_key": "Chave da OpenAI"}
+        widgets = {
+            "open_ia_key": forms.Textarea(attrs={"rows": 4}),
+        }
+        help_texts = {
+            "open_ia_key": "Armazene aqui a chave utilizada para integracoes com a OpenAI.",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def add_class(widget, css_class):
+            existing = widget.attrs.get("class", "")
+            classes = existing.split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(c for c in classes if c)
+
+        add_class(self.fields["open_ia_key"].widget, "form-control")
+
+        if self.is_bound and self.errors.get("open_ia_key"):
+            add_class(self.fields["open_ia_key"].widget, "is-invalid")
+
