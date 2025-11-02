@@ -91,6 +91,7 @@ class Exposicao(models.Model):
     data_final = models.DateField('Data de encerramento', null=False, blank=False)
     local = models.CharField('Local(ais)', max_length=255, null=False, blank=False)
     orgazador = models.CharField('Organizador(es)', max_length=200, null=False, blank=False)
+    exposicao_fisica = models.BooleanField('Exposicação física', default=True)
 
     class Meta:
         verbose_name = "Exposição"
@@ -114,7 +115,7 @@ class LocalInterno(models.Model):
 class PecasAcervo(models.Model):
 
     denominacao = models.CharField('Nome da peça',max_length=100, null=False, blank=False)
-    autor = models.ManyToManyField(Pessoa, null=True, blank=True, verbose_name="Autores(as)")
+    autor = models.ManyToManyField(Pessoa, blank=True, verbose_name="Autores(as)")
     titulo_dado_pelo_autor = models.CharField('Título dado pelo autor', max_length=100, null=False, blank=False)
     nr_registro = models.CharField('Nº registro', max_length=10, null=True, blank=True)
     numero_ordem = models.CharField('Nº de ordem', max_length=3, null=True, blank=True)

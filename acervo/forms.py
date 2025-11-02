@@ -419,6 +419,7 @@ class ExposicaoForm(forms.ModelForm):
             "data_final",
             "local",
             "orgazador",
+            "exposicao_fisica",
         ]
         labels = {
             "nome": "Nome da exposição",
@@ -427,13 +428,16 @@ class ExposicaoForm(forms.ModelForm):
             "data_final": "Data de encerramento",
             "local": "Local(ais)",
             "orgazador": "Organizador(es)",
+            "exposicao_fisica": "Exposicao fisica?",
         }
         widgets = {
             "descricao": forms.Textarea(attrs={"rows": 4}),
+            "exposicao_fisica": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         help_texts = {
             "local": "Informe o(s) local(ais) onde a exposição ocorreu ou ocorrerá.",
             "orgazador": "Informe o(s) organizador(es) da exposição.",
+            "exposicao_fisica": "Desmarque se a exposicao for exclusivamente virtual.",
         }
         error_messages = {
             "nome": {"required": "Informe o nome da exposição."},

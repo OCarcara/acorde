@@ -19,6 +19,7 @@
                     <th>Data de Início</th>
                     <th>Data de Encerramento</th>
                     <th>Local</th>
+                    <th>Formato</th>
                     <th class="text-center">Ações</th>
                 </tr>
             </thead>
@@ -33,6 +34,7 @@
                         <td>{{ exposicao.data_inicio|date:"d/m/Y" }}</td>
                         <td>{{ exposicao.data_final|date:"d/m/Y" }}</td>
                         <td>{{ exposicao.local }}</td>
+                        <td>{{ exposicao.exposicao_fisica|yesno:"Fisica,Virtual" }}</td>
                         <td class="text-center text-nowrap">
                             <a href="{% url 'exposicao_update' exposicao.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Editar">
                                 <i class="bi bi-pencil"></i> Editar
@@ -44,7 +46,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center">Nenhuma exposição cadastrada.</td>
+                        <td colspan="6" class="text-center">Nenhuma exposição cadastrada.</td>
                     </tr>
                 {% endfor %}
             </tbody>

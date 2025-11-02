@@ -17,6 +17,7 @@
                         <p class="mb-1"><strong>Descrição:</strong> {{ exposicao.descricao|truncatewords:30 }}</p>
                         <p class="mb-1"><strong>Período:</strong> {{ exposicao.data_inicio|date:"d/m/Y" }} a {{ exposicao.data_final|date:"d/m/Y" }}</p>
                         <p class="mb-1"><strong>Local:</strong> {{ exposicao.local }}</p>
+                        <p class="mb-1"><strong>Formato:</strong> {{ exposicao.exposicao_fisica|yesno:"Fisica,Virtual" }}</p>
                         <p class="mb-0"><strong>Organizador(es):</strong> {{ exposicao.orgazador }}</p>
                     </div>
 

@@ -120,6 +120,23 @@
                     </div>
                 {% endif %}
             </div>
+
+            <div class="col-12">
+                <div class="form-check form-switch">
+                    {{ form.exposicao_fisica }}
+                    <label class="form-check-label" for="{{ form.exposicao_fisica.id_for_label }}">
+                        {{ form.exposicao_fisica.label }}
+                    </label>
+                </div>
+                {% if form.exposicao_fisica.help_text %}
+                    <small class="form-text text-muted">{{ form.exposicao_fisica.help_text }}</small>
+                {% endif %}
+                {% if form.exposicao_fisica.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.exposicao_fisica.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
         <div class="mt-4 d-flex flex-wrap gap-2">
