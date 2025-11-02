@@ -188,3 +188,14 @@ class HistoricoPecas(models.Model):
 
     def __str__(self):
         return f"{self.peca} - {self.tipo_evento} - De {format(self.data_inicio, 'd/m/Y')} a {format(self.data_final, 'd/m/Y')}"
+
+class Configs(models.Model):
+    
+    open_ia_key = models.TextField('Chave da Open IA', blank=True)
+    
+    class Meta:
+        verbose_name = "Chave da Open IA"
+        verbose_name_plural = "Chaves da Open IA"
+        
+    def __str__(self):
+       return "Configurações privadas do sistema. Apenas usuários autorizados"
