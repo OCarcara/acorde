@@ -1,5 +1,5 @@
 from django.contrib import admin
-""" from .models import *
+from .models import *
 
 # configuracoes globais
 admin.site.site_header = "Memorial Olhos D'Água - Administração"
@@ -41,4 +41,4 @@ admin.site.register(TipoEventoPeca, TipoEventoPecaAdmin)
 
 class HistoricoPecasAdmin(admin.ModelAdmin):
     pass
-admin.site.register(HistoricoPecas, HistoricoPecasAdmin) """
+admin.site.register(HistoricoPecas, HistoricoPecasAdmin)
