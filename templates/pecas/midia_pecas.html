@@ -1,6 +1,20 @@
 {% extends "partials/_base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<style>
+    .descricao-texto[contenteditable="true"] {
+        white-space: pre-wrap;
+        overflow-y: auto;
+    }
+
+    .descricao-texto[contenteditable="true"][data-placeholder]:not([data-has-content="true"])::before {
+        content: attr(data-placeholder);
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row align-items-center mb-3">
@@ -116,7 +130,15 @@
                                     <div class="col-lg-4 col-md-6 d-flex flex-column h-100">
                                         <h4 class="h6 mb-3">Descrever em texto</h4>
                                         <button type="button" class="btn btn-outline-primary mb-3 btn-descrever" data-action="descrever" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Descrever peça</button>
-                                        <textarea class="form-control flex-grow-1 h-100 descricao-texto" rows="6" data-midia-id="{{ midia_form.instance.pk }}" placeholder="A descrição gerada será exibida aqui." style="min-height: 160px;">{{ midia_form.instance.texto_descricao }}</textarea>
+                                        <div class="form-control flex-grow-1 h-100 descricao-texto"
+                                             contenteditable="true"
+                                             role="textbox"
+                                             aria-multiline="true"
+                                             spellcheck="true"
+                                             data-midia-id="{{ midia_form.instance.pk }}"
+                                             data-placeholder="A descrição gerada será exibida aqui."
+                                             data-initial-text="{{ midia_form.instance.texto_descricao|default_if_none:''|urlencode }}"
+                                             style="min-height: 160px;"></div>
                                         <div class="descricao-erro text-danger small mt-2 d-none" data-midia-id="{{ midia_form.instance.pk }}"></div>
                                     </div>
 
@@ -193,19 +215,72 @@
             }
         }
 
+        function getDescricaoEditor(midiaId) {
+            return document.querySelector(`.descricao-texto[data-midia-id="${midiaId}"]`);
+        }
+
+        function getEditorRawText(editor) {
+            return editor ? editor.innerText || '' : '';
+        }
+
+        function getEditorText(editor) {
+            return getEditorRawText(editor).trim();
+        }
+
+        function updateEditorPlaceholder(editor) {
+            if (!editor) {
+                return;
+            }
+            if (getEditorText(editor)) {
+                editor.dataset.hasContent = 'true';
+            } else if ('hasContent' in editor.dataset) {
+                delete editor.dataset.hasContent;
+            }
+        }
+
+        function setEditorText(editor, text) {
+            if (!editor) {
+                return;
+            }
+            editor.innerText = text || '';
+            updateEditorPlaceholder(editor);
+        }
+
+        document.querySelectorAll('.descricao-texto').forEach(function (editor) {
+            const encoded = editor.dataset.initialText || '';
+            let initialText = '';
+            if (encoded) {
+                try {
+                    initialText = decodeURIComponent(encoded);
+                } catch (error) {
+                    initialText = encoded;
+                }
+            }
+            editor.innerText = initialText;
+            updateEditorPlaceholder(editor);
+
+            editor.addEventListener('input', function () {
+                updateEditorPlaceholder(editor);
+            });
+            editor.addEventListener('blur', function () {
+                updateEditorPlaceholder(editor);
+            });
+        });
+
         document.querySelectorAll('.btn-descrever[data-action="descrever"]').forEach(function (button) {
             button.addEventListener('click', function () {
                 const midiaId = this.dataset.midiaId;
                 const pecaId = this.dataset.pecaId;
-                const textarea = document.querySelector(`textarea.descricao-texto[data-midia-id="${midiaId}"]`);
+                const editor = getDescricaoEditor(midiaId);
                 const errorBox = document.querySelector(`.descricao-erro[data-midia-id="${midiaId}"]`);
-                if (!textarea) {
+                if (!editor) {
                     if (errorBox) {
-                        errorBox.textContent = 'Não foi possível localizar o campo de descrição.';
+                        errorBox.textContent = 'N?o foi poss?vel localizar a ?rea de descri??o.';
                         errorBox.classList.remove('d-none');
                     }
                     return;
                 }
+                const rawText = getEditorRawText(editor);
                 const originalText = this.textContent;
                 this.disabled = true;
                 this.textContent = 'Gerando...';
@@ -220,12 +295,12 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken'),
                     },
-                    body: JSON.stringify({ texto: textarea.value }),
+                    body: JSON.stringify({ texto: rawText }),
                 })
                     .then(async (response) => {
                         const data = await response.json().catch(() => ({}));
                         if (!response.ok || data.error) {
-                            const messageRaw = data.error || 'Erro inesperado ao gerar descrição.';
+                            const messageRaw = data.error || 'Erro inesperado ao gerar descri??o.';
                             const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
                             if (errorBox) {
                                 errorBox.textContent = message;
@@ -236,8 +311,8 @@
                         return data;
                     })
                     .then((data) => {
-                        if (data.descricao) {
-                            textarea.value = data.descricao;
+                        if (data.descricao && editor) {
+                            setEditorText(editor, data.descricao);
                             if (errorBox) {
                                 errorBox.textContent = '';
                                 errorBox.classList.add('d-none');
@@ -246,7 +321,7 @@
                     })
                     .catch((error) => {
                         if (errorBox && !errorBox.textContent) {
-                            errorBox.textContent = error.message || 'Erro inesperado ao gerar descrição.';
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar descri??o.';
                             errorBox.classList.remove('d-none');
                         }
                     })
@@ -261,10 +336,11 @@
             button.addEventListener('click', function () {
                 const midiaId = this.dataset.midiaId;
                 const pecaId = this.dataset.pecaId;
-                const textarea = document.querySelector(`textarea.descricao-texto[data-midia-id="${midiaId}"]`);
+                const editor = getDescricaoEditor(midiaId);
                 const wrapper = document.querySelector(`.audio-wrapper[data-midia-id="${midiaId}"]`);
                 const errorBox = wrapper ? wrapper.querySelector('.audio-erro') : null;
-                const texto = textarea ? textarea.value : '';
+                const rawText = getEditorRawText(editor);
+                const texto = rawText.trim();
 
                 const originalText = this.textContent;
                 this.disabled = true;
@@ -275,18 +351,28 @@
                     errorBox.classList.add('d-none');
                 }
 
+                if (!texto) {
+                    if (errorBox) {
+                        errorBox.textContent = 'Informe ou gere uma descrição antes de solicitar o áudio.';
+                        errorBox.classList.remove('d-none');
+                    }
+                    this.disabled = false;
+                    this.textContent = originalText;
+                    return;
+                }
+
                 fetch(`/pecas/${pecaId}/midias/${midiaId}/audio/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken'),
                     },
-                    body: JSON.stringify({ texto }),
+                    body: JSON.stringify({ texto: rawText }),
                 })
                     .then(async (response) => {
                         const data = await response.json().catch(() => ({}));
                         if (!response.ok || data.error) {
-                            const messageRaw = data.error || 'Erro inesperado ao gerar o áudio.';
+                            const messageRaw = data.error || 'Erro inesperado ao gerar o ?udio.';
                             const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
                             if (errorBox) {
                                 errorBox.textContent = message;
@@ -297,8 +383,8 @@
                         return data;
                     })
                     .then((data) => {
-                        if (textarea && data.texto) {
-                            textarea.value = data.texto;
+                        if (editor && data.texto) {
+                            setEditorText(editor, data.texto);
                         }
                         renderAudio(wrapper, data.audio_url);
                         if (errorBox) {
@@ -308,7 +394,7 @@
                     })
                     .catch((error) => {
                         if (errorBox && !errorBox.textContent) {
-                            errorBox.textContent = error.message || 'Erro inesperado ao gerar o áudio.';
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar o ?udio.';
                             errorBox.classList.remove('d-none');
                         }
                     })
