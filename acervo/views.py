@@ -1,6 +1,7 @@
 from collections import defaultdict
 import base64
 import json
+import mimetypes
 from pathlib import Path
 
 import requests
@@ -149,6 +150,11 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
         )
 
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+    mime_type = getattr(getattr(midia.url_midia, "file", None), "content_type", None)
+    if not mime_type:
+        mime_type, _ = mimetypes.guess_type(midia.url_midia.name)
+    mime_type = mime_type or "application/octet-stream"
+    data_url = f"data:{mime_type};base64,{image_base64}"
 
     system_prompt = (
         "Você é um especialista em descrição de peças museológicas. "
@@ -178,7 +184,7 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
                     },
                     {
                         "type": "input_image",
-                        "image_base64": image_base64,
+                        "image_url": data_url,
                     },
                 ],
             },
