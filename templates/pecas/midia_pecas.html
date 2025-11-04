@@ -1,4 +1,5 @@
 {% extends "partials/_base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="container py-4">
@@ -70,44 +71,63 @@
     <h3 class="h5 mb-3">Mídias já cadastradas</h3>
     {% with existentes=midia_formset.forms %}
         {% if midias_existentes %}
-            <div class="row row-cols-1 row-cols-md-3 g-3">
+            <div class="row g-3">
                 {% for midia_form in existentes %}
                     {% if midia_form.instance.pk %}
-                        <div class="col">
-                            <div class="p-3 rounded-3 shadow-sm bg-white h-100 d-flex flex-column">
-                                <h4 class="h6 mb-1">
-                                    {% if midia_form.instance.url_midia %}
-                                        <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="text-decoration-none">
-                                            {{ midia_form.instance.legenda|default:"Sem legenda" }}
-                                        </a>
-                                    {% else %}
-                                        {{ midia_form.instance.legenda|default:"Sem legenda" }}
-                                    {% endif %}
-                                </h4>
-                                <p class="text-muted small mb-3">{{ midia_form.instance.get_tipo_display }}</p>
-
-                                <div class="mb-3">
-                                    {% if midia_form.instance.url_midia %}
-                                        <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="d-block">
-                                            {% if midia_form.instance.tipo == "F" %}
-                                                <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded">
+                        <div class="col-12">
+                            <div class="p-3 rounded-3 shadow-sm bg-white">
+                                <div class="row g-3 align-items-start">
+                                    <div class="col-lg-4 col-md-12 d-flex flex-column">
+                                        <h4 class="h6 mb-1">
+                                            {% if midia_form.instance.url_midia %}
+                                                <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="text-decoration-none">
+                                                    {{ midia_form.instance.legenda|default:"Sem legenda" }}
+                                                </a>
                                             {% else %}
-                                                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
-                                                    <span class="text-muted">Abrir arquivo</span>
+                                                {{ midia_form.instance.legenda|default:"Sem legenda" }}
+                                            {% endif %}
+                                        </h4>
+                                        <p class="text-muted small mb-3">{{ midia_form.instance.get_tipo_display }}</p>
+
+                                        <div class="mb-3">
+                                            {% if midia_form.instance.url_midia %}
+                                                <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="d-block">
+                                                    {% if midia_form.instance.tipo == "F" %}
+                                                        <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded">
+                                                    {% else %}
+                                                        <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:160px;">
+                                                            <span class="text-muted">Abrir arquivo</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </a>
+                                            {% else %}
+                                                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:160px;">
+                                                    <span class="text-muted">Arquivo não disponível</span>
                                                 </div>
                                             {% endif %}
-                                        </a>
-                                    {% else %}
-                                        <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
-                                            <span class="text-muted">Arquivo não disponível</span>
                                         </div>
-                                    {% endif %}
-                                </div>
 
-                                <form method="post" action="{% url 'peca_midia_delete' peca.pk midia_form.instance.pk %}" onsubmit="return confirm('Deseja realmente remover esta mídia?');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Deletar mídia</button>
-                                </form>
+                                        <form method="post" action="{% url 'peca_midia_delete' peca.pk midia_form.instance.pk %}" onsubmit="return confirm('Deseja realmente remover esta mídia?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Deletar mídia</button>
+                                        </form>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 d-flex flex-column">
+                                        <h4 class="h6 mb-3">Descrever em texto</h4>
+                                        <button type="button" class="btn btn-outline-primary mb-3 btn-descrever" data-action="descrever" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Descrever peça</button>
+                                        <textarea class="form-control flex-grow-1 descricao-texto" rows="6" data-midia-id="{{ midia_form.instance.pk }}" placeholder="A descrição gerada será exibida aqui."></textarea>
+                                        <div class="descricao-erro text-danger small mt-2 d-none" data-midia-id="{{ midia_form.instance.pk }}"></div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 d-flex flex-column">
+                                        <h4 class="h6 mb-3">Audiodescrever</h4>
+                                        <button type="button" class="btn btn-outline-primary mb-3">Gerar áudio</button>
+                                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center flex-grow-1" style="min-height:160px;">
+                                            <img src="{% static 'acorde/icons/volume-up-fill.svg' %}" alt="Ícone de áudio">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     {% endif %}
@@ -118,4 +138,79 @@
         {% endif %}
     {% endwith %}
 </div>
+
+<script>
+    (function () {
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+
+        document.querySelectorAll('.btn-descrever[data-action="descrever"]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const midiaId = this.dataset.midiaId;
+                const pecaId = this.dataset.pecaId;
+                const textarea = document.querySelector(`textarea.descricao-texto[data-midia-id="${midiaId}"]`);
+                const errorBox = document.querySelector(`.descricao-erro[data-midia-id="${midiaId}"]`);
+                if (!textarea) {
+                    if (errorBox) {
+                        errorBox.textContent = 'Não foi possível localizar o campo de descrição.';
+                        errorBox.classList.remove('d-none');
+                    }
+                    return;
+                }
+                const originalText = this.textContent;
+                this.disabled = true;
+                this.textContent = 'Gerando...';
+                if (errorBox) {
+                    errorBox.textContent = '';
+                    errorBox.classList.add('d-none');
+                }
+
+                fetch(`/pecas/${pecaId}/midias/${midiaId}/descrever/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({}),
+                })
+                    .then(async (response) => {
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok || data.error) {
+                            const messageRaw = data.error || 'Erro inesperado ao gerar descrição.';
+                            const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
+                            if (errorBox) {
+                                errorBox.textContent = message;
+                                errorBox.classList.remove('d-none');
+                            }
+                            throw new Error(message);
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        if (data.descricao) {
+                            textarea.value = data.descricao;
+                            if (errorBox) {
+                                errorBox.textContent = '';
+                                errorBox.classList.add('d-none');
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        if (errorBox && !errorBox.textContent) {
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar descrição.';
+                            errorBox.classList.remove('d-none');
+                        }
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    });
+            });
+        });
+    })();
+</script>
 {% endblock %}

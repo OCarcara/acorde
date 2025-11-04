@@ -1,8 +1,12 @@
 from collections import defaultdict
+import base64
 import json
+import mimetypes
 
+import requests
 from django.contrib import messages
 from django.db.models import Prefetch, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -114,6 +118,120 @@ def peca_midia_delete(request, peca_pk, midia_pk):
         messages.success(request, "Mídia removida com sucesso.")
 
     return redirect("peca_midias", pk=peca_pk)
+
+
+def peca_midia_descrever(request, peca_pk, midia_pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido."}, status=405)
+
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    midia = get_object_or_404(Midia, pk=midia_pk, peca_acervo=peca)
+
+    configs = Configs.objects.first()
+    if not configs or not configs.open_ia_key:
+        return JsonResponse(
+            {"error": "Chave da OpenAI não configurada nas configurações do sistema."},
+            status=400,
+        )
+
+    if not midia.url_midia:
+        return JsonResponse({"error": "Mídia não possui arquivo associado."}, status=400)
+
+    try:
+        with midia.url_midia.open("rb") as file_obj:
+            image_bytes = file_obj.read()
+            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+    except Exception as exc:  # noqa: BLE001
+        return JsonResponse(
+            {"error": f"Não foi possível ler o arquivo da mídia: {exc}"},
+            status=500,
+        )
+
+    mime_type, _ = mimetypes.guess_type(midia.url_midia.name)
+    mime_type = mime_type or "application/octet-stream"
+    data_url = f"data:{mime_type};base64,{image_base64}"
+
+    system_prompt = (
+        "Você é um especialista em descrição de peças museológicas. "
+        "Forneça uma descrição detalhada, clara e em português brasileiro da imagem fornecida, "
+        "destacando materiais, características visuais marcantes, estado e contexto histórico "
+        "quando possível. Utilize frases completas e objetivas."
+    )
+
+    payload = {
+        "model": "gpt-4.1-mini",
+        "input": [
+            {
+                "role": "system",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": system_prompt,
+                    }
+                ],
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": "Descreva a peça apresentada na imagem em português brasileiro.",
+                    },
+                    {
+                        "type": "input_image",
+                        "image_url": data_url,
+                    },
+                ],
+            },
+        ],
+        "max_output_tokens": 600,
+    }
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/responses",
+            headers={
+                "Authorization": f"Bearer {configs.open_ia_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=90,
+        )
+    except requests.RequestException as exc:  # noqa: BLE001
+        return JsonResponse({"error": f"Erro de comunicação com a OpenAI: {exc}"}, status=502)
+
+    if response.status_code >= 400:
+        try:
+            error_payload = response.json()
+            message = error_payload.get("error", {}).get("message", error_payload)
+        except json.JSONDecodeError:
+            message = response.text
+        return JsonResponse(
+            {"error": message},
+            status=response.status_code,
+        )
+
+    try:
+        data = response.json()
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"error": "Resposta inválida da OpenAI.", "raw": response.text},
+            status=502,
+        )
+
+    descricao = ""
+    for item in data.get("output", []):
+        for content in item.get("content", []):
+            if content.get("type") == "output_text":
+                descricao += content.get("text", "")
+
+    if not descricao:
+        return JsonResponse(
+            {"error": "Resposta da OpenAI não continha texto descritivo.", "raw": data},
+            status=502,
+        )
+
+    return JsonResponse({"descricao": descricao.strip()})
 
 
 def peca_delete(request, pk):

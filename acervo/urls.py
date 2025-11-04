@@ -17,6 +17,11 @@ urlpatterns = [
         name="peca_midia_delete",
     ),
     path(
+        "pecas/<int:peca_pk>/midias/<int:midia_pk>/descrever/",
+        views.peca_midia_descrever,
+        name="peca_midia_descrever",
+    ),
+    path(
         "pecas/<int:peca_pk>/historico/",
         views.peca_historico_list,
         name="peca_historico_list",
