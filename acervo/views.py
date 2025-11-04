@@ -105,6 +105,17 @@ def peca_midias(request, pk):
     return render(request, "pecas/midia_pecas.html", context)
 
 
+def peca_midia_delete(request, peca_pk, midia_pk):
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    midia = get_object_or_404(Midia, pk=midia_pk, peca_acervo=peca)
+
+    if request.method == "POST":
+        midia.delete()
+        messages.success(request, "Mídia removida com sucesso.")
+
+    return redirect("peca_midias", pk=peca_pk)
+
+
 def peca_delete(request, pk):
     peca = get_object_or_404(PecasAcervo, pk=pk)
 

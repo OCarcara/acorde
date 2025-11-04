@@ -27,9 +27,9 @@
             </div>
         {% endif %}
 
-        {% for midia_form in midia_formset.forms %}
-            {% if not midia_form.instance.pk %}
-                <div class="row g-3 align-items-start bg-light rounded-3 p-3">
+        <div class="row g-3 align-items-start bg-light rounded-3 p-3">
+            {% for midia_form in midia_formset.forms %}
+                {% if not midia_form.instance.pk %}
                     {% for hidden in midia_form.hidden_fields %}
                         {{ hidden }}
                     {% endfor %}
@@ -42,9 +42,9 @@
                     {% with field=midia_form.legenda col_class="col-md-4" %}
                         {% include "pecas/partials/_form_field.html" %}
                     {% endwith %}
-                </div>
-            {% endif %}
-        {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
 
         {% comment %} Preserve campos das mídias existentes como ocultos (exceto DELETE) {% endcomment %}
         {% for midia_form in midia_formset.forms %}
@@ -75,23 +75,33 @@
                     {% if midia_form.instance.pk %}
                         <div class="col">
                             <div class="p-3 rounded-3 shadow-sm bg-white h-100 d-flex flex-column">
-                                {% if midia_form.instance.tipo == "F" and midia_form.instance.url_midia %}
-                                    <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded mb-3">
-                                {% else %}
-                                    <div class="mb-3 d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
-                                        {% if midia_form.instance.url_midia %}
-                                            <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Abrir arquivo</a>
+                                {% if midia_form.instance.url_midia %}
+                                    <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="d-block mb-3">
+                                        {% if midia_form.instance.tipo == "F" %}
+                                            <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded">
                                         {% else %}
-                                            <span class="text-muted">Arquivo não disponível</span>
+                                            <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
+                                                <span class="text-muted">Abrir arquivo</span>
+                                            </div>
                                         {% endif %}
-                                    </div>
+                                    </a>
                                 {% endif %}
-                                <h4 class="h6 mb-1">{{ midia_form.instance.get_tipo_display }}</h4>
-                                <p class="text-muted flex-grow-1 mb-3">{{ midia_form.instance.legenda|default:"Sem legenda" }}</p>
-                                <div class="form-check">
-                                    {{ midia_form.DELETE }}
-                                    <label class="form-check-label" for="{{ midia_form.DELETE.id_for_label }}">Remover esta mídia</label>
-                                </div>
+
+                                <h4 class="h6 mb-1">
+                                    {% if midia_form.instance.url_midia %}
+                                        <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="text-decoration-none">
+                                            {{ midia_form.instance.legenda|default:"Sem legenda" }}
+                                        </a>
+                                    {% else %}
+                                        {{ midia_form.instance.legenda|default:"Sem legenda" }}
+                                    {% endif %}
+                                </h4>
+                                <p class="text-muted small mb-3">{{ midia_form.instance.get_tipo_display }}</p>
+
+                                <form method="post" action="{% url 'peca_midia_delete' peca.pk midia_form.instance.pk %}" onsubmit="return confirm('Deseja realmente remover esta mídia?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Deletar mídia</button>
+                                </form>
                             </div>
                         </div>
                     {% endif %}

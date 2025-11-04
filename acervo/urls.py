@@ -12,6 +12,11 @@ urlpatterns = [
     path("pecas/<int:pk>/excluir/", views.peca_delete, name="peca_delete"),
     path("pecas/<int:pk>/midias/", views.peca_midias, name="peca_midias"),
     path(
+        "pecas/<int:peca_pk>/midias/<int:midia_pk>/excluir/",
+        views.peca_midia_delete,
+        name="peca_midia_delete",
+    ),
+    path(
         "pecas/<int:peca_pk>/historico/",
         views.peca_historico_list,
         name="peca_historico_list",
