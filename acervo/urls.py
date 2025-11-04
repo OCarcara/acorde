@@ -10,6 +10,7 @@ urlpatterns = [
     path("pecas/adicionar/", views.peca_create, name="peca_create"),
     path("pecas/<int:pk>/editar/", views.peca_update, name="peca_update"),
     path("pecas/<int:pk>/excluir/", views.peca_delete, name="peca_delete"),
+    path("pecas/<int:pk>/midias/", views.peca_midias, name="peca_midias"),
     path(
         "pecas/<int:peca_pk>/historico/",
         views.peca_historico_list,

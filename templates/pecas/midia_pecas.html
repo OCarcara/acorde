@@ -1,0 +1,105 @@
+{% extends "partials/_base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8">
+            <h2 class="mb-0">Mídias da peça: {{ peca.denominacao }}</h2>
+            <p class="text-muted mb-0">Gerencie arquivos associados a esta peça.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'peca_update' peca.pk %}" class="btn btn-outline-primary me-2">Voltar à peça</a>
+            <a href="{% url 'pecas_acervo' %}" class="btn btn-outline-secondary">Voltar à lista</a>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+        {{ midia_formset.management_form }}
+
+        {% if midia_formset.non_form_errors %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for error in midia_formset.non_form_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% for midia_form in midia_formset.forms %}
+            {% if not midia_form.instance.pk %}
+                <div class="row g-3 align-items-start bg-light rounded-3 p-3">
+                    {% for hidden in midia_form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+                    {% with field=midia_form.tipo col_class="col-md-3" %}
+                        {% include "pecas/partials/_form_field.html" %}
+                    {% endwith %}
+                    {% with field=midia_form.url_midia col_class="col-md-5" %}
+                        {% include "pecas/partials/_form_field.html" %}
+                    {% endwith %}
+                    {% with field=midia_form.legenda col_class="col-md-4" %}
+                        {% include "pecas/partials/_form_field.html" %}
+                    {% endwith %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {% comment %} Preserve campos das mídias existentes como ocultos (exceto DELETE) {% endcomment %}
+        {% for midia_form in midia_formset.forms %}
+            {% if midia_form.instance.pk %}
+                {% for hidden in midia_form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                {% for field in midia_form.visible_fields %}
+                    {% if field.name != "DELETE" %}
+                        {{ field.as_hidden }}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salvar mídias</button>
+            <a href="{% url 'peca_update' peca.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+
+    <hr class="my-4">
+    <h3 class="h5 mb-3">Mídias já cadastradas</h3>
+    {% with existentes=midia_formset.forms %}
+        {% if midias_existentes %}
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                {% for midia_form in existentes %}
+                    {% if midia_form.instance.pk %}
+                        <div class="col">
+                            <div class="p-3 rounded-3 shadow-sm bg-white h-100 d-flex flex-column">
+                                {% if midia_form.instance.tipo == "F" and midia_form.instance.url_midia %}
+                                    <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded mb-3">
+                                {% else %}
+                                    <div class="mb-3 d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
+                                        {% if midia_form.instance.url_midia %}
+                                            <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Abrir arquivo</a>
+                                        {% else %}
+                                            <span class="text-muted">Arquivo não disponível</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                <h4 class="h6 mb-1">{{ midia_form.instance.get_tipo_display }}</h4>
+                                <p class="text-muted flex-grow-1 mb-3">{{ midia_form.instance.legenda|default:"Sem legenda" }}</p>
+                                <div class="form-check">
+                                    {{ midia_form.DELETE }}
+                                    <label class="form-check-label" for="{{ midia_form.DELETE.id_for_label }}">Remover esta mídia</label>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Nenhuma mídia cadastrada para esta peça.</p>
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}

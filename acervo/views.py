@@ -44,28 +44,16 @@ def pecas_acervo(request):
 
 
 def peca_create(request):
-    empty_instance = PecasAcervo()
-
     if request.method == "POST":
         form = PecasAcervoForm(request.POST)
-        midia_formset = MidiaFormSet(
-            request.POST,
-            request.FILES,
-            instance=empty_instance,
-            prefix="midia",
-        )
-        if form.is_valid() and midia_formset.is_valid():
-            peca = form.save()
-            midia_formset.instance = peca
-            midia_formset.save()
+        if form.is_valid():
+            form.save()
             return redirect("pecas_acervo")
     else:
         form = PecasAcervoForm()
-        midia_formset = MidiaFormSet(instance=empty_instance, prefix="midia")
 
     context = {
         "form": form,
-        "midia_formset": midia_formset,
         "form_action": reverse("peca_create"),
         "titulo_pagina": "Adicionar peça ao acervo",
         "submit_label": "Adicionar peça",
@@ -78,29 +66,43 @@ def peca_update(request, pk):
 
     if request.method == "POST":
         form = PecasAcervoForm(request.POST, instance=peca)
-        midia_formset = MidiaFormSet(
-            request.POST,
-            request.FILES,
-            instance=peca,
-            prefix="midia",
-        )
-        if form.is_valid() and midia_formset.is_valid():
+        if form.is_valid():
             form.save()
-            midia_formset.save()
             return redirect("pecas_acervo")
     else:
         form = PecasAcervoForm(instance=peca)
-        midia_formset = MidiaFormSet(instance=peca, prefix="midia")
 
     context = {
         "form": form,
-        "midia_formset": midia_formset,
         "peca": peca,
         "form_action": reverse("peca_update", args=[pk]),
         "titulo_pagina": "Editar peça",
         "submit_label": "Salvar alterações",
     }
     return render(request, "pecas/peca_form.html", context)
+
+
+def peca_midias(request, pk):
+    peca = get_object_or_404(PecasAcervo, pk=pk)
+
+    midia_formset = MidiaFormSet(
+        request.POST or None,
+        request.FILES or None,
+        instance=peca,
+        prefix="midia",
+    )
+
+    if request.method == "POST" and midia_formset.is_valid():
+        midia_formset.save()
+        messages.success(request, "Mídias atualizadas.")
+        return redirect("peca_midias", pk=pk)
+
+    context = {
+        "peca": peca,
+        "midia_formset": midia_formset,
+        "midias_existentes": list(peca.midias.all()),
+    }
+    return render(request, "pecas/midia_pecas.html", context)
 
 
 def peca_delete(request, pk):

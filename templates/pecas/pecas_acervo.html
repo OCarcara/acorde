@@ -41,6 +41,7 @@
                         <td>{{ peca.titulo_dado_pelo_autor }}</td>
                         <td class="text-center text-nowrap">
                             <a class="btn btn-sm btn-outline-primary me-1" href="{% url 'peca_historico_list' peca.id %}">Historico</a>
+                            <a class="btn btn-sm btn-outline-info me-1" href="{% url 'peca_midias' peca.id %}">Mídias</a>
                             <a class="btn btn-sm btn-outline-secondary me-1" href="{% url 'peca_update' peca.id %}">Editar</a>
                             <a class="btn btn-sm btn-outline-danger" href="{% url 'peca_delete' peca.id %}">Excluir</a>
                         </td>
