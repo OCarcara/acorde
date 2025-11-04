@@ -1,7 +1,9 @@
 from django.db import models
+from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import MaxValueValidator, FileExtensionValidator
 from django.utils.dateformat import format
 import datetime
+import os
 
 SITUACAO = {
     "LC": "Localizado",
@@ -164,7 +166,23 @@ class Midia(models.Model):
 
     def __str__(self):
         return f"{TIPO_MIDIA_DIGITAL[self.tipo]} da(o) '{self.peca_acervo}'"
-    
+
+    def save(self, *args, **kwargs):
+        if isinstance(self.url_midia, UploadedFile):
+            self.url_midia.name = os.path.basename(self.url_midia.name)
+            if self.pk:
+                previous = type(self).objects.filter(pk=self.pk).only("url_midia").first()
+                if previous and previous.url_midia:
+                    previous.url_midia.delete(save=False)
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.url_midia:
+            self.url_midia.delete(save=False)
+        if self.audio_descricao:
+            self.audio_descricao.delete(save=False)
+        return super().delete(*args, **kwargs)
+
 
 class TipoEventoPeca(models.Model):
 

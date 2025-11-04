@@ -1,5 +1,21 @@
 {% extends "partials/_base.html" %}
 
+{% block extra_head %}
+<style>
+    .peca-descricao-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .peca-descricao-wrapper .peca-descricao-textarea {
+        flex: 1 1 auto;
+        min-height: 240px;
+        resize: vertical;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row align-items-center mb-3">
@@ -84,7 +100,7 @@
                 {% include "pecas/partials/_form_field.html" %}
             {% endwith %}
 
-            {% with field=form.resumo_descritivo col_class="col-12" %}
+            {% with field=form.resumo_descritivo col_class="col-12 peca-descricao-wrapper" %}
                 {% include "pecas/partials/_form_field.html" %}
             {% endwith %}
 

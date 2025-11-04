@@ -92,7 +92,7 @@ class PecasAcervoForm(forms.ModelForm):
             "forma_aquisicao": {"required": "Selecione a forma de aquisição da peça."},
         }
         widgets = {
-            "resumo_descritivo": forms.Textarea(attrs={"rows": 3}),
+            "resumo_descritivo": forms.Textarea(attrs={"rows": 3, "class": "peca-descricao-textarea"}),
             "material_tecnica": forms.Textarea(attrs={"rows": 3}),
             "condicoes_reproducao": forms.Textarea(attrs={"rows": 3}),
             "pode_reproduzir": forms.CheckboxInput(attrs={"class": "form-check-input"}),
