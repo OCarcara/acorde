@@ -116,15 +116,24 @@
                                     <div class="col-lg-4 col-md-6 d-flex flex-column h-100">
                                         <h4 class="h6 mb-3">Descrever em texto</h4>
                                         <button type="button" class="btn btn-outline-primary mb-3 btn-descrever" data-action="descrever" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Descrever peça</button>
-                                        <textarea class="form-control flex-grow-1 descricao-texto" rows="6" data-midia-id="{{ midia_form.instance.pk }}" placeholder="A descrição gerada será exibida aqui.">{{ midia_form.instance.texto_descricao }}</textarea>
+                                        <textarea class="form-control flex-grow-1 h-100 descricao-texto" rows="6" data-midia-id="{{ midia_form.instance.pk }}" placeholder="A descrição gerada será exibida aqui." style="min-height: 160px;">{{ midia_form.instance.texto_descricao }}</textarea>
                                         <div class="descricao-erro text-danger small mt-2 d-none" data-midia-id="{{ midia_form.instance.pk }}"></div>
                                     </div>
 
                                     <div class="col-lg-4 col-md-6 d-flex flex-column h-100">
                                         <h4 class="h6 mb-3">Audiodescrever</h4>
-                                        <button type="button" class="btn btn-outline-primary mb-3">Gerar áudio</button>
-                                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center flex-grow-1" style="min-height:160px;">
-                                            <img src="{% static 'acorde/icons/volume-up-fill.svg' %}" alt="Ícone de áudio">
+                                        <button type="button" class="btn btn-outline-primary mb-3 btn-audio" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Gerar áudio</button>
+                                        <div class="bg-light rounded-3 d-flex flex-column align-items-center justify-content-center flex-grow-1 audio-wrapper" data-midia-id="{{ midia_form.instance.pk }}" style="min-height:160px;">
+                                            <img src="{% static 'acorde/icons/volume-up-fill.svg' %}" alt="Ícone de áudio" class="mb-2">
+                                            <span class="text-muted small mb-2">Executar áudio</span>
+                                            <audio controls style="width: 100%;{% if not midia_form.instance.audio_descricao %} display:none;{% endif %}">
+                                                {% if midia_form.instance.audio_descricao %}
+                                                    <source src="{{ midia_form.instance.audio_descricao.url }}" type="audio/mpeg">
+                                                {% endif %}
+                                                Seu navegador não suporta o elemento de áudio.
+                                            </audio>
+                                            <span class="text-muted small audio-placeholder{% if midia_form.instance.audio_descricao %} d-none{% endif %}">Nenhum áudio disponível.</span>
+                                            <div class="audio-erro text-danger small mt-2 d-none"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -146,6 +155,42 @@
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
             return '';
+        }
+
+        function renderAudio(wrapper, audioUrl) {
+            if (!wrapper) {
+                return;
+            }
+            const audioElement = wrapper.querySelector('audio');
+            const placeholder = wrapper.querySelector('.audio-placeholder');
+            if (audioUrl && audioElement) {
+                const cacheBustedUrl = audioUrl.includes('?') ? `${audioUrl}&t=${Date.now()}` : `${audioUrl}?t=${Date.now()}`;
+                audioElement.style.display = 'block';
+                audioElement.innerHTML = '';
+                audioElement.setAttribute('controls', 'controls');
+                const source = document.createElement('source');
+                source.src = cacheBustedUrl;
+                source.type = 'audio/mpeg';
+                audioElement.appendChild(source);
+                audioElement.load();
+                audioElement.pause();
+                audioElement.currentTime = 0;
+                audioElement.dataset.audioUrl = cacheBustedUrl;
+                if (placeholder) {
+                    placeholder.classList.add('d-none');
+                }
+            } else {
+                if (audioElement) {
+                    audioElement.pause();
+                    audioElement.currentTime = 0;
+                    audioElement.style.display = 'none';
+                    audioElement.innerHTML = '';
+                    delete audioElement.dataset.audioUrl;
+                }
+                if (placeholder) {
+                    placeholder.classList.remove('d-none');
+                }
+            }
         }
 
         document.querySelectorAll('.btn-descrever[data-action="descrever"]').forEach(function (button) {
@@ -175,7 +220,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken'),
                     },
-                    body: JSON.stringify({}),
+                    body: JSON.stringify({ texto: textarea.value }),
                 })
                     .then(async (response) => {
                         const data = await response.json().catch(() => ({}));
@@ -211,7 +256,91 @@
                     });
             });
         });
+
+        document.querySelectorAll('.btn-audio').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const midiaId = this.dataset.midiaId;
+                const pecaId = this.dataset.pecaId;
+                const textarea = document.querySelector(`textarea.descricao-texto[data-midia-id="${midiaId}"]`);
+                const wrapper = document.querySelector(`.audio-wrapper[data-midia-id="${midiaId}"]`);
+                const errorBox = wrapper ? wrapper.querySelector('.audio-erro') : null;
+                const texto = textarea ? textarea.value : '';
+
+                const originalText = this.textContent;
+                this.disabled = true;
+                this.textContent = 'Gerando...';
+
+                if (errorBox) {
+                    errorBox.textContent = '';
+                    errorBox.classList.add('d-none');
+                }
+
+                fetch(`/pecas/${pecaId}/midias/${midiaId}/audio/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ texto }),
+                })
+                    .then(async (response) => {
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok || data.error) {
+                            const messageRaw = data.error || 'Erro inesperado ao gerar o áudio.';
+                            const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
+                            if (errorBox) {
+                                errorBox.textContent = message;
+                                errorBox.classList.remove('d-none');
+                            }
+                            throw new Error(message);
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        if (textarea && data.texto) {
+                            textarea.value = data.texto;
+                        }
+                        renderAudio(wrapper, data.audio_url);
+                        if (errorBox) {
+                            errorBox.textContent = '';
+                            errorBox.classList.add('d-none');
+                        }
+                    })
+                    .catch((error) => {
+                        if (errorBox && !errorBox.textContent) {
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar o áudio.';
+                            errorBox.classList.remove('d-none');
+                        }
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    });
+            });
+        });
+
+        document.querySelectorAll('.audio-wrapper').forEach(function (wrapper) {
+            wrapper.addEventListener('click', function (event) {
+                if (event.target.closest('button')) {
+                    return;
+                }
+                const audioElement = wrapper.querySelector('audio');
+                if (!audioElement) {
+                    return;
+                }
+                if (event.target === audioElement || audioElement.contains(event.target)) {
+                    return;
+                }
+                if (getComputedStyle(audioElement).display === 'none') {
+                    return;
+                }
+                const source = audioElement.querySelector('source');
+                if (!source || !source.src) {
+                    return;
+                }
+                audioElement.play().catch(() => {});
+            });
+        });
     })();
 </script>
 {% endblock %}
-

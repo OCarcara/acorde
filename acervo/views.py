@@ -1,13 +1,12 @@
 from collections import defaultdict
 import base64
 import json
-import os
-import mimetypes
 from pathlib import Path
 
 import requests
 from django.conf import settings
 from django.contrib import messages
+from django.core.files.base import ContentFile
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -143,16 +142,13 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
     try:
         with midia.url_midia.open("rb") as file_obj:
             image_bytes = file_obj.read()
-            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
     except Exception as exc:  # noqa: BLE001
         return JsonResponse(
             {"error": f"Não foi possível ler o arquivo da mídia: {exc}"},
             status=500,
         )
 
-    mime_type, _ = mimetypes.guess_type(midia.url_midia.name)
-    mime_type = mime_type or "application/octet-stream"
-    data_url = f"data:{mime_type};base64,{image_base64}"
+    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
     system_prompt = (
         "Você é um especialista em descrição de peças museológicas. "
@@ -182,7 +178,7 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
                     },
                     {
                         "type": "input_image",
-                        "image_url": data_url,
+                        "image_base64": image_base64,
                     },
                 ],
             },
@@ -206,13 +202,9 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
     if response.status_code >= 400:
         try:
             error_payload = response.json()
-            message = error_payload.get("error", {}).get("message", error_payload)
         except json.JSONDecodeError:
-            message = response.text
-        return JsonResponse(
-            {"error": message},
-            status=response.status_code,
-        )
+            error_payload = {"status": response.status_code, "body": response.text}
+        return JsonResponse({"error": error_payload}, status=response.status_code)
 
     try:
         data = response.json()
@@ -239,6 +231,87 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
     midia.save(update_fields=["texto_descricao"])
 
     return JsonResponse({"descricao": descricao})
+
+
+def peca_midia_audio(request, peca_pk, midia_pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido."}, status=405)
+
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    midia = get_object_or_404(Midia, pk=midia_pk, peca_acervo=peca)
+
+    configs = Configs.objects.first()
+    if not configs or not configs.open_ia_key:
+        return JsonResponse(
+            {"error": "Chave da OpenAI não configurada nas configurações do sistema."},
+            status=400,
+        )
+
+    try:
+        payload_body = json.loads(request.body.decode() or "{}")
+    except json.JSONDecodeError:
+        payload_body = {}
+
+    texto = (payload_body.get("texto") or midia.texto_descricao or "").strip()
+    if not texto:
+        return JsonResponse(
+            {"error": "Informe um texto para gerar o áudio da audiodescrição."},
+            status=400,
+        )
+
+    midia.texto_descricao = texto
+    midia.save(update_fields=["texto_descricao"])
+
+    audio_payload = {
+        "model": "gpt-4o-mini-tts",
+        "voice": "alloy",
+        "input": texto,
+        "format": "mp3",
+    }
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/audio/speech",
+            headers={
+                "Authorization": f"Bearer {configs.open_ia_key}",
+                "Content-Type": "application/json",
+            },
+            json=audio_payload,
+            timeout=120,
+        )
+    except requests.RequestException as exc:  # noqa: BLE001
+        return JsonResponse({"error": f"Erro de comunicação com a OpenAI: {exc}"}, status=502)
+
+    if response.status_code >= 400:
+        try:
+            error_payload = response.json()
+        except json.JSONDecodeError:
+            error_payload = {"status": response.status_code, "body": response.text}
+        return JsonResponse({"error": error_payload}, status=response.status_code)
+
+    audio_content = response.content
+    if not audio_content:
+        return JsonResponse(
+            {"error": "A OpenAI não retornou conteúdo de áudio."},
+            status=502,
+        )
+
+    destino_base = Path(settings.MEDIA_ROOT) / "acervo" / "audiodescricoes"
+    destino_base.mkdir(parents=True, exist_ok=True)
+
+    filename = f"midia_{midia.pk}.mp3"
+
+    if midia.audio_descricao:
+        midia.audio_descricao.delete(save=False)
+
+    midia.audio_descricao.save(filename, ContentFile(audio_content), save=True)
+
+    return JsonResponse(
+        {
+            "audio_url": midia.audio_descricao.url if midia.audio_descricao else "",
+            "texto": midia.texto_descricao,
+        }
+    )
 
 
 def peca_delete(request, pk):
