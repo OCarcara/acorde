@@ -1,9 +1,12 @@
 from collections import defaultdict
 import base64
 import json
+import os
 import mimetypes
+from pathlib import Path
 
 import requests
+from django.conf import settings
 from django.contrib import messages
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
@@ -738,3 +741,4 @@ def acervo_publico_peca(request, pk):
         "autores": list(peca.autor.all()),
     }
     return render(request, "acervo_publico/peca_detalhe.html", context)
+
