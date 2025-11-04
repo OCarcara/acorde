@@ -75,18 +75,6 @@
                     {% if midia_form.instance.pk %}
                         <div class="col">
                             <div class="p-3 rounded-3 shadow-sm bg-white h-100 d-flex flex-column">
-                                {% if midia_form.instance.url_midia %}
-                                    <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="d-block mb-3">
-                                        {% if midia_form.instance.tipo == "F" %}
-                                            <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded">
-                                        {% else %}
-                                            <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
-                                                <span class="text-muted">Abrir arquivo</span>
-                                            </div>
-                                        {% endif %}
-                                    </a>
-                                {% endif %}
-
                                 <h4 class="h6 mb-1">
                                     {% if midia_form.instance.url_midia %}
                                         <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="text-decoration-none">
@@ -97,6 +85,24 @@
                                     {% endif %}
                                 </h4>
                                 <p class="text-muted small mb-3">{{ midia_form.instance.get_tipo_display }}</p>
+
+                                <div class="mb-3">
+                                    {% if midia_form.instance.url_midia %}
+                                        <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="d-block">
+                                            {% if midia_form.instance.tipo == "F" %}
+                                                <img src="{{ midia_form.instance.url_midia.url }}" alt="{{ midia_form.instance.legenda|default:'Mídia da peça' }}" class="img-fluid rounded">
+                                            {% else %}
+                                                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
+                                                    <span class="text-muted">Abrir arquivo</span>
+                                                </div>
+                                            {% endif %}
+                                        </a>
+                                    {% else %}
+                                        <div class="d-flex align-items-center justify-content-center bg-light rounded" style="min-height:120px;">
+                                            <span class="text-muted">Arquivo não disponível</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
 
                                 <form method="post" action="{% url 'peca_midia_delete' peca.pk midia_form.instance.pk %}" onsubmit="return confirm('Deseja realmente remover esta mídia?');">
                                     {% csrf_token %}
