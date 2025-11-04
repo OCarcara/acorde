@@ -76,8 +76,8 @@
                     {% if midia_form.instance.pk %}
                         <div class="col-12">
                             <div class="p-3 rounded-3 shadow-sm bg-white">
-                                <div class="row g-3 align-items-start">
-                                    <div class="col-lg-4 col-md-12 d-flex flex-column">
+                                <div class="row g-3 align-items-stretch">
+                                    <div class="col-lg-4 col-md-12 d-flex flex-column h-100">
                                         <h4 class="h6 mb-1">
                                             {% if midia_form.instance.url_midia %}
                                                 <a href="{{ midia_form.instance.url_midia.url }}" target="_blank" class="text-decoration-none">
@@ -113,14 +113,14 @@
                                         </form>
                                     </div>
 
-                                    <div class="col-lg-4 col-md-6 d-flex flex-column">
+                                    <div class="col-lg-4 col-md-6 d-flex flex-column h-100">
                                         <h4 class="h6 mb-3">Descrever em texto</h4>
                                         <button type="button" class="btn btn-outline-primary mb-3 btn-descrever" data-action="descrever" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Descrever peça</button>
-                                        <textarea class="form-control flex-grow-1 descricao-texto" rows="6" data-midia-id="{{ midia_form.instance.pk }}" placeholder="A descrição gerada será exibida aqui."></textarea>
+                                        <textarea class="form-control flex-grow-1 descricao-texto" rows="6" data-midia-id="{{ midia_form.instance.pk }}" placeholder="A descrição gerada será exibida aqui.">{{ midia_form.instance.texto_descricao }}</textarea>
                                         <div class="descricao-erro text-danger small mt-2 d-none" data-midia-id="{{ midia_form.instance.pk }}"></div>
                                     </div>
 
-                                    <div class="col-lg-4 col-md-6 d-flex flex-column">
+                                    <div class="col-lg-4 col-md-6 d-flex flex-column h-100">
                                         <h4 class="h6 mb-3">Audiodescrever</h4>
                                         <button type="button" class="btn btn-outline-primary mb-3">Gerar áudio</button>
                                         <div class="bg-light rounded-3 d-flex align-items-center justify-content-center flex-grow-1" style="min-height:160px;">

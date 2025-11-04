@@ -231,7 +231,11 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
             status=502,
         )
 
-    return JsonResponse({"descricao": descricao.strip()})
+    descricao = descricao.strip()
+    midia.texto_descricao = descricao
+    midia.save(update_fields=["texto_descricao"])
+
+    return JsonResponse({"descricao": descricao})
 
 
 def peca_delete(request, pk):

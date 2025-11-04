@@ -46,6 +46,8 @@ EXTENSOES_PERMITIDAS = [
     "pdf",                        # documentos
 ]
 
+FORMATO_AUDIO_PERMITIDA = ["mp3", "ogg",]
+
 
 def hoje():
     return datetime.date.today()
@@ -151,6 +153,9 @@ class Midia(models.Model):
     tipo = models.CharField('Tipo da mídia', max_length=1, choices=TIPO_MIDIA_DIGITAL.items(), default="F", blank=False, null=False)
     url_midia = models.FileField('Arquivo', upload_to="acervo/", null=True, blank=False, validators=[FileExtensionValidator(allowed_extensions=EXTENSOES_PERMITIDAS)])
     data_upload = models.DateField('Data upload', auto_now_add=True)
+    texto_descricao = models.TextField('Texto de descrição', blank=True)
+    audio_descricao = models.FileField('Áudiodescrição', upload_to='acervo/audiodescricoes', validators=[FileExtensionValidator(allowed_extensions=FORMATO_AUDIO_PERMITIDA)], null=True, blank=True)
+    
 
     class Meta:
         verbose_name = "Mídia"
