@@ -875,9 +875,11 @@ def acervo_publico_peca(request, pk):
         pk=pk,
     )
 
+    midias = list(peca.midias.all())
+
     context = {
         "peca": peca,
-        "midias": list(peca.midias.all()),
+        "midias": midias,
         "autores": list(peca.autor.all()),
     }
     return render(request, "acervo_publico/peca_detalhe.html", context)

@@ -84,37 +84,132 @@
         .galeria {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 24px;
         }
 
-        .imagem-destaque {
-            width: 100%;
-            aspect-ratio: 4 / 3;
-            background: var(--cinza-fundo);
+        .midia-card {
+            background: #ffffff;
+            border: 1px solid var(--cinza-borda);
             border-radius: 16px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .midia-media {
+            background: var(--cinza-fundo);
+            aspect-ratio: 4 / 3;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .imagem-destaque img {
+        .midia-media img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .miniaturas {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        .midia-placeholder {
+            padding: 48px 32px;
+            text-align: center;
+            color: #6f6c6c;
+            font-size: 15px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .midia-placeholder a {
+            color: var(--marrom-escuro);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .midia-placeholder a:hover,
+        .midia-placeholder a:focus {
+            text-decoration: underline;
+        }
+
+        .midia-conteudo {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .midia-conteudo h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--titulo-principal);
+            margin: 0;
+        }
+
+        .midia-descricao {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #5b5959;
+        }
+
+        .midia-acessibilidade {
+            border-top: 1px solid var(--cinza-borda);
+            padding-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .midia-acessibilidade h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--marrom-escuro);
+            margin: 0;
+        }
+
+        .midia-acessibilidade-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: flex-start;
+        }
+
+        .midia-qrcode {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .midia-qrcode img {
+            width: 180px;
+            max-width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e0d9d0;
+            padding: 12px;
+            background: #faf7f4;
+        }
+
+        .midia-audio {
+            flex: 1 1 260px;
+            display: flex;
+            flex-direction: column;
             gap: 12px;
         }
 
-        .miniaturas img {
+        .midia-audio p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .midia-audio audio {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
         }
 
         .detalhes {
@@ -192,9 +287,55 @@
             margin-bottom: 8px;
         }
 
+        .botao-download {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--marrom-escuro);
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            color: #ffffff;
+            background: var(--realce);
+            transition: background 0.2s ease-in-out;
+            max-width: fit-content;
+        }
+
+        .botao-download:hover,
+        .botao-download:focus {
+            background: #8d4f1f;
+            outline: none;
+        }
+
+        .qrcode-placeholder {
+            font-size: 14px;
+            color: #6f6c6c;
+            text-align: center;
+        }
+
         @media (max-width: 960px) {
             .conteudo {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .midia-acessibilidade-grid {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .midia-qrcode {
+                justify-content: center;
+            }
+
+            .botao-download {
+                width: 100%;
+                max-width: none;
             }
         }
     </style>
@@ -221,36 +362,64 @@
 
         <div class="conteudo">
             <section class="galeria">
-                <div class="imagem-destaque">
-                    {% with principal=midias|first %}
-                        {% if principal and principal.url_midia %}
-                            <img src="{{ principal.url_midia.url }}" alt="Imagem da peça {{ peca.denominacao }}">
-                        {% else %}
-                            <span>Imagem indisponível</span>
-                        {% endif %}
-                    {% endwith %}
-                </div>
-
-                {% if midias|length > 1 %}
-                    <div class="miniaturas">
-                        {% for midia in midias|slice:"1:" %}
-                            {% if midia.url_midia %}
-                                <img src="{{ midia.url_midia.url }}" alt="Imagem adicional da peça {{ peca.denominacao }}">
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+                {% if midias %}
+                    {% for midia in midias %}
+                        <article class="midia-card">
+                            <div class="midia-media">
+                                {% if midia.url_midia %}
+                                    {% if midia.tipo == "F" %}
+                                        <img src="{{ midia.url_midia.url }}" alt="{{ midia.legenda|default:"Imagem da peça" }} {{ peca.denominacao }}">
+                                    {% else %}
+                                        <div class="midia-placeholder">
+                                            <span>{{ midia.get_tipo_display|default:"Arquivo disponível" }}</span>
+                                            <a href="{{ midia.url_midia.url }}" target="_blank" rel="noopener">Abrir arquivo</a>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="midia-placeholder">Mídia não disponível.</div>
+                                {% endif %}
+                            </div>
+                            <div class="midia-conteudo">
+                                <h3>{{ midia.legenda|default:"Mídia da peça" }}</h3>
+                                {% if midia.audio_descricao or midia.qrcode_midia %}
+                                    <div class="midia-acessibilidade">
+                                        <h4>Recursos de acessibilidade</h4>
+                                        <div class="midia-acessibilidade-grid">
+                                            <div class="midia-qrcode">
+                                                {% if midia.qrcode_midia %}
+                                                    <img src="{{ midia.qrcode_midia.url }}" alt="QR code para acessar a audiodescrição da mídia {{ midia.legenda|default:peca.denominacao }}">
+                                                {% else %}
+                                                    <p class="qrcode-placeholder">QR code ainda não disponível.</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="midia-audio">
+                                                {% if midia.audio_descricao %}
+                                                    <p>Escute a audiodescrição desta mídia abaixo ou utilize o QR code para ouvir em outro dispositivo.</p>
+                                                    <audio controls preload="none">
+                                                        <source src="{{ midia.audio_descricao.url }}" type="audio/mpeg">
+                                                        Seu navegador não suporta o elemento de áudio.
+                                                    </audio>
+                                                    <a class="botao-download" href="{{ midia.audio_descricao.url }}" download>
+                                                        Baixe o áudio
+                                                    </a>
+                                                {% else %}
+                                                    <p class="qrcode-placeholder">Audiodescrição não disponível.</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <p class="qrcode-placeholder">Nenhuma mídia disponível para esta peça.</p>
                 {% endif %}
             </section>
 
             <section class="detalhes">
                 <div class="bloco">
                     <h2>Informações gerais</h2>
-                    {% if peca.resumo_descritivo %}
-                        <div class="texto-destaque">
-                            <span class="rotulo">Descrição</span>
-                            <p class="resumo">{{ peca.resumo_descritivo }}</p>
-                        </div>
-                    {% endif %}
                     <div class="lista-dados">
                         {% if peca.titulo_dado_pelo_autor %}
                             <div class="item-dado">
@@ -258,34 +427,22 @@
                                 <span class="valor">{{ peca.titulo_dado_pelo_autor }}</span>
                             </div>
                         {% endif %}
-                        {% if peca.nr_registro %}
+                        {% if peca.material_tecnica %}
                             <div class="item-dado">
-                                <span class="rotulo">Número de registro</span>
-                                <span class="valor">{{ peca.nr_registro }}</span>
+                                <span class="rotulo">Materiais e técnica</span>
+                                <span class="valor">{{ peca.material_tecnica }}</span>
                             </div>
                         {% endif %}
-                        {% if peca.numero_ordem %}
+                        {% if peca.dimensoes %}
                             <div class="item-dado">
-                                <span class="rotulo">Número de ordem</span>
-                                <span class="valor">{{ peca.numero_ordem }}</span>
+                                <span class="rotulo">Dimensões</span>
+                                <span class="valor">{{ peca.dimensoes }}</span>
                             </div>
                         {% endif %}
-                        {% if peca.get_situacao_display %}
+                        {% if peca.local_producao %}
                             <div class="item-dado">
-                                <span class="rotulo">Situação</span>
-                                <span class="valor">{{ peca.get_situacao_display }}</span>
-                            </div>
-                        {% endif %}
-                        {% if peca.get_estado_conservacao_display %}
-                            <div class="item-dado">
-                                <span class="rotulo">Estado de conservação</span>
-                                <span class="valor">{{ peca.get_estado_conservacao_display }}</span>
-                            </div>
-                        {% endif %}
-                        {% if peca.get_tipologia_display %}
-                            <div class="item-dado">
-                                <span class="rotulo">Tipologia</span>
-                                <span class="valor">{{ peca.get_tipologia_display }}</span>
+                                <span class="rotulo">Local de produção</span>
+                                <span class="valor">{{ peca.local_producao }}</span>
                             </div>
                         {% endif %}
                         {% if peca.get_forma_aquisicao_display %}
