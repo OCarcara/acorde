@@ -291,11 +291,7 @@ def peca_midia_audio(request, peca_pk, midia_pk):
         return JsonResponse({"error": f"Erro de comunicação com a OpenAI: {exc}"}, status=502)
 
     if response.status_code >= 400:
-        try:
-            error_payload = response.json()
-        except json.JSONDecodeError:
-            error_payload = {"status": response.status_code, "body": response.text}
-        return JsonResponse({"error": error_payload}, status=response.status_code)
+        return JsonResponse({"error": response.text or response.reason}, status=response.status_code)
 
     audio_content = response.content
     if not audio_content:
@@ -329,13 +325,24 @@ def peca_midia_qrcode(request, peca_pk, midia_pk):
     peca = get_object_or_404(PecasAcervo, pk=peca_pk)
     midia = get_object_or_404(Midia, pk=midia_pk, peca_acervo=peca)
 
-    if not midia.audio_descricao:
+    audio_field = midia.audio_descricao
+
+    if not audio_field or not getattr(audio_field, "name", ""):
         return JsonResponse(
-            {"error": "Gere o áudio da audiodescrição antes de criar o QRcode."},
+            {"error": "Não há áudio disponível para gerar o QRcode."},
             status=400,
         )
 
-    audio_url = midia.audio_descricao.url
+    storage = audio_field.storage
+    audio_name = audio_field.name
+
+    if not audio_name or (storage and not storage.exists(audio_name)):
+        return JsonResponse(
+            {"error": "Não foi possível localizar o arquivo de áudio para gerar o QRcode."},
+            status=400,
+        )
+
+    audio_url = audio_field.url
     if not audio_url:
         return JsonResponse(
             {"error": "Não foi possível identificar a URL do áudio gerado."},

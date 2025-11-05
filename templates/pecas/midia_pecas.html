@@ -517,17 +517,6 @@
                     errorBox.classList.add('d-none');
                 }
 
-                const audioUrl = container ? container.dataset.audioUrl || '' : '';
-                if (!audioUrl) {
-                    if (errorBox) {
-                        errorBox.textContent = 'Gere o áudio antes de criar o QRcode.';
-                        errorBox.classList.remove('d-none');
-                    }
-                    this.disabled = false;
-                    this.textContent = originalText;
-                    return;
-                }
-
                 fetch(`/pecas/${pecaId}/midias/${midiaId}/qrcode/`, {
                     method: 'POST',
                     headers: {
