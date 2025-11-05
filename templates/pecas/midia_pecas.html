@@ -150,7 +150,7 @@
                                             <span class="text-muted small mb-2">Executar áudio</span>
                                             <audio controls style="width: 100%;{% if not midia_form.instance.audio_descricao %} display:none;{% endif %}">
                                                 {% if midia_form.instance.audio_descricao %}
-                                                    <source src="{{ midia_form.instance.audio_descricao.url }}" type="audio/mpeg">
+                                                    <source src="{{ midia_form.instance.audio_descricao_url_absoluta }}" type="audio/mpeg">
                                                 {% endif %}
                                                 Seu navegador não suporta o elemento de áudio.
                                             </audio>
@@ -158,7 +158,7 @@
                                             <div class="audio-erro text-danger small mt-2 d-none"></div>
                                         </div>
                                         <button type="button" class="btn btn-outline-primary mt-3 btn-qrcode" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Gerar QRcode do áudio</button>
-                                        <div class="qrcode-container mt-3" data-midia-id="{{ midia_form.instance.pk }}" data-initial-qrcode="{% if midia_form.instance.qrcode_midia %}{{ midia_form.instance.qrcode_midia.url }}{% endif %}" data-initial-audio="{% if midia_form.instance.audio_descricao %}{{ midia_form.instance.audio_descricao.url }}{% endif %}">
+                                        <div class="qrcode-container mt-3" data-midia-id="{{ midia_form.instance.pk }}" data-initial-qrcode="{% if midia_form.instance.qrcode_midia %}{{ midia_form.instance.qrcode_midia.url }}{% endif %}" data-initial-audio="{% if midia_form.instance.audio_descricao %}{{ midia_form.instance.audio_descricao_url_absoluta }}{% endif %}">
                                             <div class="qrcode-display d-flex flex-column align-items-center gap-2 d-none">
                                                 <img src="" alt="QRcode do áudio" class="qrcode-img img-fluid" style="max-width: 180px;">
                                                 <a href="#" target="_blank" rel="noopener" class="qrcode-audio-link small text-decoration-none btn-link px-0 d-none">Abrir áudio</a>

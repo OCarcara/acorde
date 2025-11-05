@@ -5,6 +5,8 @@ from django.utils.dateformat import format
 import datetime
 import os
 
+from .utils import build_absolute_media_url
+
 SITUACAO = {
     "LC": "Localizado",
     "NL": "Não localizado",
@@ -184,6 +186,11 @@ class Midia(models.Model):
         if self.qrcode_midia:
             self.qrcode_midia.delete(save=False)
         return super().delete(*args, **kwargs)
+
+    @property
+    def audio_descricao_url_absoluta(self):
+        audio_url = getattr(self.audio_descricao, "url", "")
+        return build_absolute_media_url(audio_url)
 
 
 class TipoEventoPeca(models.Model):

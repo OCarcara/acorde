@@ -396,10 +396,10 @@
                                                 {% if midia.audio_descricao %}
                                                     <p>Escute a audiodescrição desta mídia abaixo ou utilize o QR code para ouvir em outro dispositivo.</p>
                                                     <audio controls preload="none">
-                                                        <source src="{{ midia.audio_descricao.url }}" type="audio/mpeg">
+                                                        <source src="{{ midia.audio_descricao_url_absoluta }}" type="audio/mpeg">
                                                         Seu navegador não suporta o elemento de áudio.
                                                     </audio>
-                                                    <a class="botao-download" href="{{ midia.audio_descricao.url }}" download>
+                                                    <a class="botao-download" href="{{ midia.audio_descricao_url_absoluta }}" download>
                                                         Baixe o áudio
                                                     </a>
                                                 {% else %}

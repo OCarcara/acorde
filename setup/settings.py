@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://acervo.acorde.art.br")
+
 
 # Application definition
 

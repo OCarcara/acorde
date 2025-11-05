@@ -37,6 +37,7 @@ from .models import (
     Midia,
     Configs,
 )
+from .utils import build_absolute_media_url
 
 
 def index(request):
@@ -310,12 +311,11 @@ def peca_midia_audio(request, peca_pk, midia_pk):
 
     midia.audio_descricao.save(filename, ContentFile(audio_content), save=True)
 
-    return JsonResponse(
-        {
-            "audio_url": midia.audio_descricao.url if midia.audio_descricao else "",
-            "texto": midia.texto_descricao,
-        }
-    )
+    audio_url = ""
+    if midia.audio_descricao:
+        audio_url = build_absolute_media_url(midia.audio_descricao.url, request=request)
+
+    return JsonResponse({"audio_url": audio_url, "texto": midia.texto_descricao})
 
 
 def peca_midia_qrcode(request, peca_pk, midia_pk):
@@ -342,12 +342,14 @@ def peca_midia_qrcode(request, peca_pk, midia_pk):
             status=400,
         )
 
-    audio_url = audio_field.url
-    if not audio_url:
+    raw_audio_url = audio_field.url
+    if not raw_audio_url:
         return JsonResponse(
             {"error": "Não foi possível identificar a URL do áudio gerado."},
             status=400,
         )
+
+    audio_url = build_absolute_media_url(raw_audio_url, request=request)
 
     try:
         qr = qrcode.QRCode(
@@ -380,12 +382,11 @@ def peca_midia_qrcode(request, peca_pk, midia_pk):
     midia.qrcode_midia.save(filename, ContentFile(buffer.getvalue()), save=True)
     buffer.close()
 
-    return JsonResponse(
-        {
-            "qrcode_url": midia.qrcode_midia.url if midia.qrcode_midia else "",
-            "audio_url": audio_url,
-        }
-    )
+    qrcode_url = ""
+    if midia.qrcode_midia:
+        qrcode_url = build_absolute_media_url(midia.qrcode_midia.url, request=request)
+
+    return JsonResponse({"qrcode_url": qrcode_url, "audio_url": audio_url})
 
 
 def peca_delete(request, pk):
