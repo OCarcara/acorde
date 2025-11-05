@@ -487,12 +487,6 @@
                                 <span class="valor">{{ peca.data_final_producao|date:"d/m/Y" }}</span>
                             </div>
                         {% endif %}
-                        {% if peca.dimensoes %}
-                            <div class="item-dado">
-                                <span class="rotulo">Dimensões</span>
-                                <span class="valor">{{ peca.dimensoes }}</span>
-                            </div>
-                        {% endif %}
                         {% if peca.thesaurus %}
                             <div class="item-dado">
                                 <span class="rotulo">Thesaurus</span>
@@ -504,22 +498,6 @@
                             <span class="valor">{{ peca.pode_reproduzir|yesno:"Sim,Não" }}</span>
                         </div>
                     </div>
-                    {% if peca.material_tecnica or peca.condicoes_reproducao %}
-                        <div class="texto-longos">
-                            {% if peca.material_tecnica %}
-                                <div>
-                                    <span class="rotulo">Materiais e técnicas</span>
-                                    <p class="resumo">{{ peca.material_tecnica }}</p>
-                                </div>
-                            {% endif %}
-                            {% if peca.condicoes_reproducao %}
-                                <div>
-                                    <span class="rotulo">Condições de reprodução</span>
-                                    <p class="resumo">{{ peca.condicoes_reproducao }}</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
                 </div>
             </section>
         </div>
