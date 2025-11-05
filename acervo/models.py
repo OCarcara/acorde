@@ -157,8 +157,8 @@ class Midia(models.Model):
     data_upload = models.DateField('Data upload', auto_now_add=True)
     texto_descricao = models.TextField('Texto de descrição', blank=True)
     audio_descricao = models.FileField('Áudiodescrição', upload_to='acervo/audiodescricoes', validators=[FileExtensionValidator(allowed_extensions=FORMATO_AUDIO_PERMITIDA)], null=True, blank=True)
+    qrcode_midia = models.ImageField('QRCode da mídia', upload_to='acervo/qrcodes', null=True, blank=True)
     
-
     class Meta:
         verbose_name = "Mídia"
         verbose_name_plural = "Mídias"
@@ -181,6 +181,8 @@ class Midia(models.Model):
             self.url_midia.delete(save=False)
         if self.audio_descricao:
             self.audio_descricao.delete(save=False)
+        if self.qrcode_midia:
+            self.qrcode_midia.delete(save=False)
         return super().delete(*args, **kwargs)
 
 

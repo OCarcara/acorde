@@ -2,8 +2,10 @@ from collections import defaultdict
 import base64
 import json
 import mimetypes
+from io import BytesIO
 from pathlib import Path
 
+import qrcode
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -316,6 +318,65 @@ def peca_midia_audio(request, peca_pk, midia_pk):
         {
             "audio_url": midia.audio_descricao.url if midia.audio_descricao else "",
             "texto": midia.texto_descricao,
+        }
+    )
+
+
+def peca_midia_qrcode(request, peca_pk, midia_pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido."}, status=405)
+
+    peca = get_object_or_404(PecasAcervo, pk=peca_pk)
+    midia = get_object_or_404(Midia, pk=midia_pk, peca_acervo=peca)
+
+    if not midia.audio_descricao:
+        return JsonResponse(
+            {"error": "Gere o áudio da audiodescrição antes de criar o QRcode."},
+            status=400,
+        )
+
+    audio_url = midia.audio_descricao.url
+    if not audio_url:
+        return JsonResponse(
+            {"error": "Não foi possível identificar a URL do áudio gerado."},
+            status=400,
+        )
+
+    try:
+        qr = qrcode.QRCode(
+            version=None,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(audio_url)
+        qr.make(fit=True)
+        image = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    except Exception as exc:  # noqa: BLE001
+        return JsonResponse(
+            {"error": f"Não foi possível gerar o QRcode: {exc}"},
+            status=500,
+        )
+
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    destino_base = Path(settings.MEDIA_ROOT) / "acervo" / "qrcodes"
+    destino_base.mkdir(parents=True, exist_ok=True)
+
+    filename = f"midia_{midia.pk}_qrcode.png"
+
+    if midia.qrcode_midia:
+        midia.qrcode_midia.delete(save=False)
+
+    midia.qrcode_midia.save(filename, ContentFile(buffer.getvalue()), save=True)
+    buffer.close()
+
+    return JsonResponse(
+        {
+            "qrcode_url": midia.qrcode_midia.url if midia.qrcode_midia else "",
+            "audio_url": audio_url,
         }
     )
 

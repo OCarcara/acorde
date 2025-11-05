@@ -157,6 +157,15 @@
                                             <span class="text-muted small audio-placeholder{% if midia_form.instance.audio_descricao %} d-none{% endif %}">Nenhum áudio disponível.</span>
                                             <div class="audio-erro text-danger small mt-2 d-none"></div>
                                         </div>
+                                        <button type="button" class="btn btn-outline-primary mt-3 btn-qrcode" data-midia-id="{{ midia_form.instance.pk }}" data-peca-id="{{ peca.pk }}">Gerar QRcode do áudio</button>
+                                        <div class="qrcode-container mt-3" data-midia-id="{{ midia_form.instance.pk }}" data-initial-qrcode="{% if midia_form.instance.qrcode_midia %}{{ midia_form.instance.qrcode_midia.url }}{% endif %}" data-initial-audio="{% if midia_form.instance.audio_descricao %}{{ midia_form.instance.audio_descricao.url }}{% endif %}">
+                                            <div class="qrcode-display d-flex flex-column align-items-center gap-2 d-none">
+                                                <img src="" alt="QRcode do áudio" class="qrcode-img img-fluid" style="max-width: 180px;">
+                                                <a href="#" target="_blank" rel="noopener" class="qrcode-audio-link small text-decoration-none btn-link px-0 d-none">Abrir áudio</a>
+                                            </div>
+                                            <p class="qrcode-empty text-muted small mb-0">Nenhum QRcode gerado ainda.</p>
+                                            <div class="qrcode-erro text-danger small mt-2 d-none"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -179,6 +188,84 @@
             return '';
         }
 
+        function withCacheBuster(url) {
+            if (!url) {
+                return '';
+            }
+            return url.includes('?') ? `${url}&t=${Date.now()}` : `${url}?t=${Date.now()}`;
+        }
+
+        function renderQRCode(container, qrcodeUrl, audioUrl) {
+            if (!container) {
+                return;
+            }
+
+            const display = container.querySelector('.qrcode-display');
+            const img = container.querySelector('.qrcode-img');
+            const empty = container.querySelector('.qrcode-empty');
+            const link = container.querySelector('.qrcode-audio-link');
+
+            if (qrcodeUrl) {
+                const cacheBusted = withCacheBuster(qrcodeUrl);
+                if (img) {
+                    img.src = cacheBusted;
+                    img.classList.remove('d-none');
+                }
+                if (display) {
+                    display.classList.remove('d-none');
+                }
+                if (empty) {
+                    empty.classList.add('d-none');
+                }
+                container.dataset.qrcodeUrl = qrcodeUrl;
+            } else {
+                if (img) {
+                    img.src = '';
+                }
+                if (display) {
+                    display.classList.add('d-none');
+                }
+                if (empty) {
+                    empty.classList.remove('d-none');
+                }
+                delete container.dataset.qrcodeUrl;
+            }
+
+            if (audioUrl) {
+                container.dataset.audioUrl = audioUrl;
+            } else {
+                delete container.dataset.audioUrl;
+            }
+
+            if (link) {
+                if (qrcodeUrl && audioUrl) {
+                    link.href = audioUrl;
+                    link.classList.remove('d-none');
+                } else {
+                    link.classList.add('d-none');
+                    link.removeAttribute('href');
+                }
+            }
+        }
+
+        function refreshQrAudioIfNeeded(midiaId, audioUrl) {
+            if (!midiaId) {
+                return;
+            }
+            const container = document.querySelector(`.qrcode-container[data-midia-id="${midiaId}"]`);
+            if (!container) {
+                return;
+            }
+            if (audioUrl) {
+                container.dataset.audioUrl = audioUrl;
+            } else {
+                delete container.dataset.audioUrl;
+            }
+            if (container.dataset.qrcodeUrl) {
+                renderQRCode(container, container.dataset.qrcodeUrl, audioUrl);
+            }
+        }
+
         function renderAudio(wrapper, audioUrl) {
             if (!wrapper) {
                 return;
@@ -186,7 +273,7 @@
             const audioElement = wrapper.querySelector('audio');
             const placeholder = wrapper.querySelector('.audio-placeholder');
             if (audioUrl && audioElement) {
-                const cacheBustedUrl = audioUrl.includes('?') ? `${audioUrl}&t=${Date.now()}` : `${audioUrl}?t=${Date.now()}`;
+                const cacheBustedUrl = withCacheBuster(audioUrl);
                 audioElement.style.display = 'block';
                 audioElement.innerHTML = '';
                 audioElement.setAttribute('controls', 'controls');
@@ -201,6 +288,7 @@
                 if (placeholder) {
                     placeholder.classList.add('d-none');
                 }
+                refreshQrAudioIfNeeded(wrapper.dataset.midiaId, audioUrl);
             } else {
                 if (audioElement) {
                     audioElement.pause();
@@ -212,6 +300,7 @@
                 if (placeholder) {
                     placeholder.classList.remove('d-none');
                 }
+                refreshQrAudioIfNeeded(wrapper.dataset.midiaId, '');
             }
         }
 
@@ -267,6 +356,14 @@
             });
         });
 
+        document.querySelectorAll('.qrcode-container').forEach(function (container) {
+            const initialQrcode = container.dataset.initialQrcode || '';
+            const initialAudio = container.dataset.initialAudio || '';
+            renderQRCode(container, initialQrcode, initialAudio);
+            delete container.dataset.initialQrcode;
+            delete container.dataset.initialAudio;
+        });
+
         document.querySelectorAll('.btn-descrever[data-action="descrever"]').forEach(function (button) {
             button.addEventListener('click', function () {
                 const midiaId = this.dataset.midiaId;
@@ -275,7 +372,7 @@
                 const errorBox = document.querySelector(`.descricao-erro[data-midia-id="${midiaId}"]`);
                 if (!editor) {
                     if (errorBox) {
-                        errorBox.textContent = 'N?o foi poss?vel localizar a ?rea de descri??o.';
+                        errorBox.textContent = 'Não foi possível localizar a área de descrição.';
                         errorBox.classList.remove('d-none');
                     }
                     return;
@@ -300,7 +397,7 @@
                     .then(async (response) => {
                         const data = await response.json().catch(() => ({}));
                         if (!response.ok || data.error) {
-                            const messageRaw = data.error || 'Erro inesperado ao gerar descri??o.';
+                            const messageRaw = data.error || 'Erro inesperado ao gerar descrição.';
                             const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
                             if (errorBox) {
                                 errorBox.textContent = message;
@@ -321,7 +418,7 @@
                     })
                     .catch((error) => {
                         if (errorBox && !errorBox.textContent) {
-                            errorBox.textContent = error.message || 'Erro inesperado ao gerar descri??o.';
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar descrição.';
                             errorBox.classList.remove('d-none');
                         }
                     })
@@ -372,7 +469,7 @@
                     .then(async (response) => {
                         const data = await response.json().catch(() => ({}));
                         if (!response.ok || data.error) {
-                            const messageRaw = data.error || 'Erro inesperado ao gerar o ?udio.';
+                            const messageRaw = data.error || 'Erro inesperado ao gerar o áudio.';
                             const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
                             if (errorBox) {
                                 errorBox.textContent = message;
@@ -394,7 +491,72 @@
                     })
                     .catch((error) => {
                         if (errorBox && !errorBox.textContent) {
-                            errorBox.textContent = error.message || 'Erro inesperado ao gerar o ?udio.';
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar o áudio.';
+                            errorBox.classList.remove('d-none');
+                        }
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    });
+            });
+        });
+
+        document.querySelectorAll('.btn-qrcode').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const midiaId = this.dataset.midiaId;
+                const pecaId = this.dataset.pecaId;
+                const container = document.querySelector(`.qrcode-container[data-midia-id="${midiaId}"]`);
+                const errorBox = container ? container.querySelector('.qrcode-erro') : null;
+                const originalText = this.textContent;
+                this.disabled = true;
+                this.textContent = 'Gerando...';
+
+                if (errorBox) {
+                    errorBox.textContent = '';
+                    errorBox.classList.add('d-none');
+                }
+
+                const audioUrl = container ? container.dataset.audioUrl || '' : '';
+                if (!audioUrl) {
+                    if (errorBox) {
+                        errorBox.textContent = 'Gere o áudio antes de criar o QRcode.';
+                        errorBox.classList.remove('d-none');
+                    }
+                    this.disabled = false;
+                    this.textContent = originalText;
+                    return;
+                }
+
+                fetch(`/pecas/${pecaId}/midias/${midiaId}/qrcode/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({}),
+                })
+                    .then(async (response) => {
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok || data.error) {
+                            const messageRaw = data.error || 'Erro inesperado ao gerar o QRcode do áudio.';
+                            const message = typeof messageRaw === 'string' ? messageRaw : JSON.stringify(messageRaw);
+                            if (errorBox) {
+                                errorBox.textContent = message;
+                                errorBox.classList.remove('d-none');
+                            }
+                            throw new Error(message);
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        if (container) {
+                            renderQRCode(container, data.qrcode_url, data.audio_url);
+                        }
+                    })
+                    .catch((error) => {
+                        if (errorBox && !errorBox.textContent) {
+                            errorBox.textContent = error.message || 'Erro inesperado ao gerar o QRcode do áudio.';
                             errorBox.classList.remove('d-none');
                         }
                     })

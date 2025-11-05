@@ -27,6 +27,11 @@ urlpatterns = [
         name="peca_midia_audio",
     ),
     path(
+        "pecas/<int:peca_pk>/midias/<int:midia_pk>/qrcode/",
+        views.peca_midia_qrcode,
+        name="peca_midia_qrcode",
+    ),
+    path(
         "pecas/<int:peca_pk>/historico/",
         views.peca_historico_list,
         name="peca_historico_list",
