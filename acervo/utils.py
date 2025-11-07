@@ -7,6 +7,20 @@ from urllib.parse import urljoin
 from django.conf import settings
 
 
+def usuario_pode_acessar_configuracoes(user) -> bool:
+    """Retorna True se o usuário pode acessar as páginas de configuração."""
+    if not getattr(user, "is_authenticated", False):
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+
+    grupos = getattr(user, "groups", None)
+    if grupos is None:
+        return False
+
+    return not grupos.filter(name__iexact="editores").exists()
+
+
 def build_absolute_media_url(path: str | None, request=None) -> str:
     """Retorna uma URL absoluta para um recurso de mídia."""
     if not path:

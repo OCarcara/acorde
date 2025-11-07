@@ -1,5 +1,5 @@
 {% extends "partials/_base.html" %}
-
+{% load permissoes %}
 {% block content %}
 <div class="row">
     <h3>Gestão do Memorial</h3>
@@ -31,15 +31,17 @@
                 </div>
             </div>
         </div>
+        {% if request.user|pode_ver_configuracoes %}
         <div class="col-sm-6">
             <div class="card m-1">
                 <div class="card-body">
                     <h5 class="card-title">Configurações</h5>
                     <p class="card-text">Eixos temáticos, espaços internos da ACORDE, controle de usuários e outras configurações do sistema</p>
-                    <a href="#" class="btn btn-primary">Configurações</a>
+                    <a href="{% url 'config_sistema' %}" class="btn btn-primary">Configurações</a>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

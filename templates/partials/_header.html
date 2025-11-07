@@ -1,8 +1,8 @@
-{% load static %}
+{% load static permissoes %}
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="{% url 'index' %}">
             <img src="{% static 'acorde/LogoAcorde2.png' %}" width="40" height="40" alt="Logo da ACORDE">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -32,6 +32,12 @@
                         {% if current_url == 'exposicoes_list' or current_url == 'exposicao_create' or current_url == 'exposicao_update' or current_url == 'exposicao_delete' %}aria-current="page"{% endif %}
                         href="{% url 'exposicoes_list' %}">Exposições</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-muted" href="{% url 'acervo_publico' %}" target="_blank" rel="noopener noreferrer">
+                        Acervo público
+                    </a>
+                </li>
+                {% if request.user|pode_ver_configuracoes %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {% if current_url == 'eixos_list' or current_url == 'eixo_create' or current_url == 'eixo_update' or current_url == 'eixo_delete' or current_url == 'locais_internos_list' or current_url == 'local_interno_create' or current_url == 'local_interno_update' or current_url == 'local_interno_delete' or current_url == 'tipos_evento_list' or current_url == 'tipo_evento_create' or current_url == 'tipo_evento_update' or current_url == 'tipo_evento_delete' or current_url == 'config_sistema' %}active{% else %}text-muted{% endif %}"
                         {% if current_url == 'eixos_list' or current_url == 'eixo_create' or current_url == 'eixo_update' or current_url == 'eixo_delete' or current_url == 'locais_internos_list' or current_url == 'local_interno_create' or current_url == 'local_interno_update' or current_url == 'local_interno_delete' or current_url == 'tipos_evento_list' or current_url == 'tipo_evento_create' or current_url == 'tipo_evento_update' or current_url == 'tipo_evento_delete' or current_url == 'config_sistema' %}aria-current="page"{% endif %}
@@ -60,7 +66,7 @@
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" href="{% url 'admin:login' %}" target="_blank" rel="noopener noreferrer">
-                                Usuarios
+                                Usuários
                             </a>
                         </li>
                         <li>
@@ -70,12 +76,15 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
             </ul>
             {% endwith %}
-            <form class="d-flex">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
+            <div class="d-flex align-items-center gap-3">
+                <span class="navbar-text text-muted">
+                    Olá, {{ request.user.get_short_name|default:request.user.username }}
+                </span>
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'logout' %}">Sair</a>
+            </div>
         </div>
     </div>
 </nav>

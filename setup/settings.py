@@ -30,7 +30,6 @@ ALLOWED_HOSTS = []
 
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://acervo.acorde.art.br")
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -136,3 +135,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Autenticação
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'acervo_publico'

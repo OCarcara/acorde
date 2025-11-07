@@ -9,11 +9,16 @@ import qrcode
 import requests
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.files.base import ContentFile
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
+from functools import wraps
 
 from .forms import (
     MidiaFormSet,
@@ -37,13 +42,31 @@ from .models import (
     Midia,
     Configs,
 )
-from .utils import build_absolute_media_url
+from .utils import build_absolute_media_url, usuario_pode_acessar_configuracoes
 
 
+def requer_permissao_configuracoes(view_func):
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not usuario_pode_acessar_configuracoes(request.user):
+            raise PermissionDenied
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped
+
+
+def login_required_no_cache(view_func):
+    return login_required(never_cache(view_func))
+
+
+@login_required_no_cache
 def index(request):
     return render(request, "index.html")
 
 
+
+
+@login_required_no_cache
 def pecas_acervo(request):
     pecas = (
         PecasAcervo.objects.all()
@@ -53,6 +76,9 @@ def pecas_acervo(request):
     return render(request, "pecas/pecas_acervo.html", {"pecas": pecas})
 
 
+
+
+@login_required_no_cache
 def peca_create(request):
     if request.method == "POST":
         form = PecasAcervoForm(request.POST)
@@ -71,6 +97,9 @@ def peca_create(request):
     return render(request, "pecas/peca_form.html", context)
 
 
+
+
+@login_required_no_cache
 def peca_update(request, pk):
     peca = get_object_or_404(PecasAcervo, pk=pk)
 
@@ -92,6 +121,9 @@ def peca_update(request, pk):
     return render(request, "pecas/peca_form.html", context)
 
 
+
+
+@login_required_no_cache
 def peca_midias(request, pk):
     peca = get_object_or_404(PecasAcervo, pk=pk)
 
@@ -115,6 +147,9 @@ def peca_midias(request, pk):
     return render(request, "pecas/midia_pecas.html", context)
 
 
+
+
+@login_required_no_cache
 def peca_midia_delete(request, peca_pk, midia_pk):
     peca = get_object_or_404(PecasAcervo, pk=peca_pk)
     midia = get_object_or_404(Midia, pk=midia_pk, peca_acervo=peca)
@@ -126,6 +161,9 @@ def peca_midia_delete(request, peca_pk, midia_pk):
     return redirect("peca_midias", pk=peca_pk)
 
 
+
+
+@login_required_no_cache
 def peca_midia_descrever(request, peca_pk, midia_pk):
     if request.method != "POST":
         return JsonResponse({"error": "Método não permitido."}, status=405)
@@ -242,6 +280,9 @@ def peca_midia_descrever(request, peca_pk, midia_pk):
     return JsonResponse({"descricao": descricao})
 
 
+
+
+@login_required_no_cache
 def peca_midia_audio(request, peca_pk, midia_pk):
     if request.method != "POST":
         return JsonResponse({"error": "Método não permitido."}, status=405)
@@ -318,6 +359,9 @@ def peca_midia_audio(request, peca_pk, midia_pk):
     return JsonResponse({"audio_url": audio_url, "texto": midia.texto_descricao})
 
 
+
+
+@login_required_no_cache
 def peca_midia_qrcode(request, peca_pk, midia_pk):
     if request.method != "POST":
         return JsonResponse({"error": "Método não permitido."}, status=405)
@@ -389,6 +433,9 @@ def peca_midia_qrcode(request, peca_pk, midia_pk):
     return JsonResponse({"qrcode_url": qrcode_url, "audio_url": audio_url})
 
 
+
+
+@login_required_no_cache
 def peca_delete(request, pk):
     peca = get_object_or_404(PecasAcervo, pk=pk)
 
@@ -399,6 +446,9 @@ def peca_delete(request, pk):
     return render(request, "pecas/peca_confirm_delete.html", {"peca": peca})
 
 
+
+
+@login_required_no_cache
 def peca_historico_list(request, peca_pk):
     peca = get_object_or_404(PecasAcervo, pk=peca_pk)
     historicos = (
@@ -413,6 +463,9 @@ def peca_historico_list(request, peca_pk):
     return render(request, "pecas/historico_peca_list.html", context)
 
 
+
+
+@login_required_no_cache
 def peca_historico_create(request, peca_pk):
     peca = get_object_or_404(PecasAcervo, pk=peca_pk)
 
@@ -436,6 +489,9 @@ def peca_historico_create(request, peca_pk):
     return render(request, "pecas/historico_peca_form.html", context)
 
 
+
+
+@login_required_no_cache
 def peca_historico_update(request, peca_pk, pk):
     peca = get_object_or_404(PecasAcervo, pk=peca_pk)
     historico = get_object_or_404(HistoricoPecas, pk=pk, peca=peca)
@@ -459,6 +515,9 @@ def peca_historico_update(request, peca_pk, pk):
     return render(request, "pecas/historico_peca_form.html", context)
 
 
+
+
+@login_required_no_cache
 def peca_historico_delete(request, peca_pk, pk):
     peca = get_object_or_404(PecasAcervo, pk=peca_pk)
     historico = get_object_or_404(HistoricoPecas, pk=pk, peca=peca)
@@ -474,11 +533,17 @@ def peca_historico_delete(request, peca_pk, pk):
     return render(request, "pecas/historico_peca_confirm_delete.html", context)
 
 
+
+
+@login_required_no_cache
 def pessoas_list(request):
     pessoas = Pessoa.objects.all().order_by("nome")
     return render(request, "pessoas/pessoas.html", {"pessoas": pessoas})
 
 
+
+
+@login_required_no_cache
 def pessoa_create(request):
     if request.method == "POST":
         form = PessoaForm(request.POST)
@@ -497,6 +562,9 @@ def pessoa_create(request):
     return render(request, "pessoas/pessoa_form.html", context)
 
 
+
+
+@login_required_no_cache
 def pessoa_update(request, pk):
     pessoa = get_object_or_404(Pessoa, pk=pk)
 
@@ -518,6 +586,9 @@ def pessoa_update(request, pk):
     return render(request, "pessoas/pessoa_form.html", context)
 
 
+
+
+@login_required_no_cache
 def pessoa_delete(request, pk):
     pessoa = get_object_or_404(Pessoa, pk=pk)
 
@@ -528,11 +599,19 @@ def pessoa_delete(request, pk):
     return render(request, "pessoas/pessoa_confirm_delete.html", {"pessoa": pessoa})
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def eixos_list(request):
     eixos = EixoOrganizador.objects.all().order_by("eixo")
     return render(request, "configuracoes/eixos.html", {"eixos": eixos})
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def eixo_create(request):
     if request.method == "POST":
         form = EixoOrganizadorForm(request.POST)
@@ -551,6 +630,10 @@ def eixo_create(request):
     return render(request, "configuracoes/eixo_form.html", context)
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def eixo_update(request, pk):
     eixo = get_object_or_404(EixoOrganizador, pk=pk)
 
@@ -572,6 +655,10 @@ def eixo_update(request, pk):
     return render(request, "configuracoes/eixo_form.html", context)
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def eixo_delete(request, pk):
     eixo = get_object_or_404(EixoOrganizador, pk=pk)
 
@@ -582,11 +669,19 @@ def eixo_delete(request, pk):
     return render(request, "configuracoes/eixo_confirm_delete.html", {"eixo": eixo})
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def locais_internos_list(request):
     locais = LocalInterno.objects.all().order_by("local")
     return render(request, "configuracoes/locais_internos.html", {"locais": locais})
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def local_interno_create(request):
     if request.method == "POST":
         form = LocalInternoForm(request.POST)
@@ -605,6 +700,10 @@ def local_interno_create(request):
     return render(request, "configuracoes/local_interno_form.html", context)
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def local_interno_update(request, pk):
     local_interno = get_object_or_404(LocalInterno, pk=pk)
 
@@ -626,6 +725,10 @@ def local_interno_update(request, pk):
     return render(request, "configuracoes/local_interno_form.html", context)
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def local_interno_delete(request, pk):
     local_interno = get_object_or_404(LocalInterno, pk=pk)
 
@@ -640,11 +743,19 @@ def local_interno_delete(request, pk):
     )
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def tipos_evento_list(request):
     tipos_evento = TipoEventoPeca.objects.all().order_by("desc_evento")
     return render(request, "configuracoes/tipos_evento.html", {"tipos_evento": tipos_evento})
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def tipo_evento_create(request):
     if request.method == "POST":
         form = TipoEventoPecaForm(request.POST)
@@ -663,6 +774,10 @@ def tipo_evento_create(request):
     return render(request, "configuracoes/tipo_evento_form.html", context)
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def tipo_evento_update(request, pk):
     tipo_evento = get_object_or_404(TipoEventoPeca, pk=pk)
 
@@ -684,6 +799,10 @@ def tipo_evento_update(request, pk):
     return render(request, "configuracoes/tipo_evento_form.html", context)
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def tipo_evento_delete(request, pk):
     tipo_evento = get_object_or_404(TipoEventoPeca, pk=pk)
 
@@ -698,6 +817,10 @@ def tipo_evento_delete(request, pk):
     )
 
 
+
+
+@login_required_no_cache
+@requer_permissao_configuracoes
 def configuracoes_sistema(request):
     configs, _created = Configs.objects.get_or_create(pk=1, defaults={"open_ia_key": ""})
 
@@ -719,11 +842,17 @@ def configuracoes_sistema(request):
     return render(request, "configs/config_form.html", context)
 
 
+
+
+@login_required_no_cache
 def exposicoes_list(request):
     exposicoes = Exposicao.objects.all().order_by("-data_inicio")
     return render(request, "exposicoes/exposicoes.html", {"exposicoes": exposicoes})
 
 
+
+
+@login_required_no_cache
 def exposicao_create(request):
     if request.method == "POST":
         form = ExposicaoForm(request.POST)
@@ -742,6 +871,9 @@ def exposicao_create(request):
     return render(request, "exposicoes/exposicao_form.html", context)
 
 
+
+
+@login_required_no_cache
 def exposicao_update(request, pk):
     exposicao = get_object_or_404(Exposicao, pk=pk)
 
@@ -763,6 +895,9 @@ def exposicao_update(request, pk):
     return render(request, "exposicoes/exposicao_form.html", context)
 
 
+
+
+@login_required_no_cache
 def exposicao_delete(request, pk):
     exposicao = get_object_or_404(Exposicao, pk=pk)
 
@@ -772,6 +907,16 @@ def exposicao_delete(request, pk):
 
     return render(request, "exposicoes/exposicao_confirm_delete.html", {"exposicao": exposicao})
 
+
+
+@login_required_no_cache
+def logout_view(request):
+    logout(request)
+    response = redirect("acervo_publico")
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
 
 
 def acervo_publico(request):

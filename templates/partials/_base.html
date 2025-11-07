@@ -10,8 +10,19 @@
 </head>
 <body>
     <div class="container">
-        {% include 'partials/_header.html' %}
+        {% if request.user.is_authenticated %}
+            {% include 'partials/_header.html' %}
+        {% endif %}
         <div class="container mt-3 mb-3">
+            {% if messages %}
+                <div class="mt-2">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </div>
         {% include 'partials/_footer.html' %}
